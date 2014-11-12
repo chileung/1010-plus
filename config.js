@@ -1,6 +1,6 @@
 // 基础配置
 var config = {
-	mapSize: 4,
+	mapSize: 10,
 	size: 50,
 	randomCount: 3,
 	color: 'red',
