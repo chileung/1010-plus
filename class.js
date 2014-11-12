@@ -79,28 +79,26 @@ var Container = Object.subClass({
 			y: 0
 		};
 
-		this.config = Object.defineProperties({}, {
+		this.config = Object.defineProperties({
+			value: false
+		}, {
 			enableMoving: {
-				get: function(value) {
-					return this.value || false;
+				get: function() {
+					return this.value;
 				},
 				set: function(value) {
 					this.value = value;
 
 					if (this.value) {
 						// 绑定事件
-						that.container.on('mousedown', function(evt) {
-							_offset.x = that.pos.x - evt.stageX;
-							_offset.y = that.pos.y - evt.stageY;
-						});
-
-						that.container.on('pressmove', function(evt) {
-							that.moveTo(evt.stageX + _offset.x, evt.stageY + _offset.y);
-						});
+						that.container.off('mousedown', that.mouseDownHandler);
+						that.container.on('mousedown', that.mouseDownHandler, that, false, _offset);
+						that.container.off('pressmove', that.pressMoveHandler)
+						that.container.on('pressmove', that.pressMoveHandler, that, false, _offset);
 					} else {
 						// 解绑事件
-						that.container.off('mousedown');
-						that.container.off('pressmove');
+						that.container.off('mousedown', that.mouseDownHandler);
+						that.container.off('pressmove', that.pressMoveHandler);
 					}
 				}
 			}
@@ -164,6 +162,13 @@ var Container = Object.subClass({
 		this.pos.x = x;
 		this.pos.y = y;
 		this.update();
+	},
+	pressMoveHandler: function(evt, _offset) {
+		this.moveTo(evt.stageX + _offset.x, evt.stageY + _offset.y);
+	},
+	mouseDownHandler: function(evt, _offset) {
+		_offset.x = this.pos.x - evt.stageX;
+		_offset.y = this.pos.y - evt.stageY;
 	},
 	stage: config.stage
 });
