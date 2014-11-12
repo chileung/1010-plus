@@ -32,6 +32,7 @@ var RandomBrickGenerator = Container.subClass({
 /* 游乐场类 extend Container
 	public properties:
 		arr map 	: 一个二维的正方地图
+			元素结构：{square : 小正方的引用, isEmpty : 当前元素是否为空}
 		mapWidth	: 地图宽度
 		mapHeight 	: 地图高度
 	
@@ -40,6 +41,7 @@ var RandomBrickGenerator = Container.subClass({
 		removeLittleSquare	: 删除小正方
 		contain(brick) 		: 积木brick是否在游乐场范围内，返回bool
 		settle(brick)  		: 将积木安装在游乐场中，失败返回false
+		elim				: 消除符合规则的小正方
 */
 var Kursaal = Container.subClass({
 	init: function() {
@@ -61,11 +63,6 @@ var Kursaal = Container.subClass({
 
 		this.mapWidth = config.mapSize * config.size;
 		this.mapHeight = config.mapSize * config.size;
-
-		// temp todo
-		var test = new createjs.Shape();
-		test.graphics.beginFill('yellow').drawRect(0, 0, this.mapWidth, this.mapHeight);
-		this.addChild(test);
 	},
 	addLittleSquare: function(square) {
 		this.addChild(square.shape);
@@ -170,8 +167,18 @@ var Kursaal = Container.subClass({
 		return flag;
 	},
 	elim: function() {
-		// todo
-		// 消除符合规则的小正方
+		var map = this.map,
+			i, j, ilen, jlen;
+
+		// 1.横向检查
+		for (i = 0, ilen = map.length; i < ilen; i++) {
+
+			for (j = 0, jlen = map[i].length; j < jlen; j++) {
+
+			}
+		}
+
+		// 2.纵向检查
 	},
 	isGameOver: function() {
 		// todo
@@ -181,7 +188,7 @@ var Kursaal = Container.subClass({
 
 // main
 var playground = new Kursaal();
-var demo = new I([{
+var demo1 = new I([{
 	x: 2,
 	y: 2
 }, {
@@ -191,6 +198,27 @@ var demo = new I([{
 	x: 2,
 	y: 4
 }]);
-demo.setOut();
-demo.setKursaal(playground);
-playground.update();
+
+var demo2 = new I([{
+	x: 2,
+	y: 2
+}, {
+	x: 2,
+	y: 3
+}, {
+	x: 2,
+	y: 4
+}]);
+
+demo2.move(100, 0);
+
+demo1.setOut();
+demo2.setOut();
+
+demo1.setKursaal(playground);
+demo2.setKursaal(playground);
+
+demo1.config.enableMoving = true;
+demo2.config.enableMoving = true;
+
+// playground.update();

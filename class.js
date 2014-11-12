@@ -55,9 +55,11 @@ var DisplayObj = Object.subClass({
 		obj container : Container实例
 		obj stage 	  : 公共的Stage实例
 		obj pos 	  : 坐标信息，x & y
+		obj config	  : 配置信息
+			config.enableMoving : 是否允许移动
 
 	private properties:
-		obj _offset    : 触摸点距离坐标信息的距离，x & y
+		obj  _offset    		: 触摸点距离坐标信息的距离，x & y
 		
 	public methods:
 		addChild(child)		: 添加子组件到Container实例中，接受多种参数格式：单个对象、对象数组、未命名参数对象 
@@ -65,6 +67,11 @@ var DisplayObj = Object.subClass({
 		update				: 更新视图
 		move(x,y)  			: 将组件移动{x,y}个单位
 		moveTo(x,y)			: 将组件移动至{x,y}位置
+
+	private methods:
+		_mouseDownHandler	: 鼠标按下事件handler
+		_pressMoveHandler	: 鼠标移动事件handler
+		_pressUpHandler 	: 鼠标松开事件handler
 */
 var Container = Object.subClass({
 	init: function() {
@@ -91,14 +98,17 @@ var Container = Object.subClass({
 
 					if (this.value) {
 						// 绑定事件
-						that.container.off('mousedown', that.mouseDownHandler);
-						that.container.on('mousedown', that.mouseDownHandler, that, false, _offset);
-						that.container.off('pressmove', that.pressMoveHandler)
-						that.container.on('pressmove', that.pressMoveHandler, that, false, _offset);
+						that.container.off('mousedown', that._mouseDownHandler);
+						that.container.on('mousedown', that._mouseDownHandler, that, false, _offset);
+						that.container.off('pressmove', that._pressMoveHandler)
+						that.container.on('pressmove', that._pressMoveHandler, that, false, _offset);
+						that.container.off('pressup', that._pressUpHandler);
+						that.container.on('pressup', that._pressUpHandler, that, false, _offset);
 					} else {
 						// 解绑事件
-						that.container.off('mousedown', that.mouseDownHandler);
-						that.container.off('pressmove', that.pressMoveHandler);
+						that.container.off('mousedown', that._mouseDownHandler);
+						that.container.off('pressmove', that._pressMoveHandler);
+						that.container.off('pressup', that._pressUpHandler);
 					}
 				}
 			}
@@ -163,24 +173,28 @@ var Container = Object.subClass({
 		this.pos.y = y;
 		this.update();
 	},
-	pressMoveHandler: function(evt, _offset) {
+	_pressMoveHandler: function(evt, _offset) {
 		this.moveTo(evt.stageX + _offset.x, evt.stageY + _offset.y);
 	},
-	mouseDownHandler: function(evt, _offset) {
+	_mouseDownHandler: function(evt, _offset) {
 		_offset.x = this.pos.x - evt.stageX;
 		_offset.y = this.pos.y - evt.stageY;
 	},
+	_pressUpHandler: function(evt, _offset) {},
 	stage: config.stage
 });
 
 /* 积木类 extend Container
 	public properties:
-		littleSquareList : 小正方集合
-		shapeDesc		 : 形状描述
+		shapeDesc : 形状描述
 
 	public methods:
 		releaseLittleSquare(square)	: 将小正方从自身中释放，成功则返回true
 		setOut()					: 堆叠成积木
+		setKursaal(kursaal)		 	: 设置即将要放置到的娱乐场
+
+	private methods:
+		_pressUpHandler : 鼠标松开事件handler(扩展父类的方法)
 */
 var Brick = Container.subClass({
 	init: function() {
@@ -188,11 +202,6 @@ var Brick = Container.subClass({
 
 		// 引用类型的值不可以作为父类共享属性
 		this.shapeDesc = [];
-
-		var that = this;
-		this.container.on('pressup', function(evt) {
-			that.kursaal.settle(that);
-		});
 	},
 	releaseLittleSquare: function(square) {
 		// 仅仅是释放子组件，并没有更新shapeDesc里的关系
@@ -214,5 +223,11 @@ var Brick = Container.subClass({
 	},
 	setKursaal: function(kursaal) {
 		this.kursaal = kursaal;
+	},
+	_pressUpHandler: function(evt) {
+		// 调用父类原来的方法
+		this._super();
+		// 子类扩展该方法
+		this.kursaal.settle(this);
 	}
 });
