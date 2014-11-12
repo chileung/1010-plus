@@ -180,7 +180,9 @@ var Container = Object.subClass({
 		_offset.x = this.pos.x - evt.stageX;
 		_offset.y = this.pos.y - evt.stageY;
 	},
-	_pressUpHandler: function(evt, _offset) {},
+	_pressUpHandler: function(evt, _offset) {
+		
+	},
 	stage: config.stage
 });
 
@@ -206,8 +208,28 @@ var Brick = Container.subClass({
 		this.setOut();
 	},
 	releaseLittleSquare: function(square) {
-		// 仅仅是释放子组件，并没有更新shapeDesc里的关系
-		return this.removeChild(square.shape);
+		// 释放子组件
+		this.removeChild(square.shape);
+
+		// 更新shapeDesc
+		for (var i = 0, len = this.shapeDesc.length; i < len; i++) {
+			if (this.shapeDesc[i].item === square) {
+				this.shapeDesc[i].item = null;
+				this.shapeDesc[i].isSet = false;
+				break;
+			}
+		}
+	},
+	isNull: function() {
+		var ret = true;
+		this.shapeDesc.forEach(function(val) {
+			if (val.isSet) {
+				ret = false;
+				return false;
+			}
+		});
+
+		return ret;
 	},
 	setOut: function() {
 		var that = this;
@@ -228,7 +250,7 @@ var Brick = Container.subClass({
 	},
 	_pressUpHandler: function(evt) {
 		// 调用父类原来的方法
-		this._super();
+		this._super.apply(this, arguments);
 		// 子类扩展该方法
 		this.kursaal.settle(this);
 		this.kursaal.elim();

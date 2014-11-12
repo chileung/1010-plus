@@ -50,8 +50,7 @@ var RandomBrickGenerator = Container.subClass({
 			brick.config.enableMoving = true;
 		});
 
-		// this.update();
-		// todo
+		this.update();
 	},
 	start: function() {
 		this.random().display();
@@ -64,11 +63,19 @@ var RandomBrickGenerator = Container.subClass({
 		return ret;
 	})(),
 	_pressUpHandler: function() {
-		this._super();
+		this._super.apply(this, arguments);
 
-		// todo
+		// 检查积木是否已经安装到娱乐场中
+		for (var i = 0, len = this.brickList.length; i < len;) {
+			if (this.brickList[i].isNull()) {
+				this.removeChild(this.brickList[i].container);
+				this.brickList.splice(i, 1);
+				len--;
+			} else {
+				i++;
+			}
+		}
 
-		// extend
 		if (this.brickList.length === 0) {
 			this.random().display();
 		}
@@ -83,6 +90,10 @@ var generator = new RandomBrickGenerator();
 
 // 设置生成器要服务的娱乐场
 generator.setKursaal(playground);
+
+// 摆放位置
+generator.moveTo(400, 700);
+playground.moveTo(400, 100);
 
 // 启动游戏
 generator.start();
