@@ -184,7 +184,7 @@ var Container = Object.subClass({
 	stage: config.stage
 });
 
-/* 积木类 extend Container
+/* 抽象积木类 extend Container
 	public properties:
 		shapeDesc : 形状描述
 
@@ -229,5 +229,254 @@ var Brick = Container.subClass({
 		this._super();
 		// 子类扩展该方法
 		this.kursaal.settle(this);
+		this.kursaal.elim();
+	}
+});
+
+/* 具体的积木类 */
+var VerticalLine2 = Brick.subClass({
+	init: function() {
+		this._super();
+		this.shapeDesc = JSON.parse(config.shapes.verticalLine2);
+	}
+});
+
+/* 游乐场类 extend Container
+	public properties:
+		arr map 	: 一个二维的正方地图
+			元素结构：{square : 小正方的引用, isEmpty : 当前元素是否为空}
+		mapWidth	: 地图宽度
+		mapHeight 	: 地图高度
+	
+	public methods:
+		addLittleSquare		: 添加小正方
+		removeLittleSquare	: 删除小正方
+		contain(brick) 		: 积木brick是否在游乐场范围内，返回bool
+		settle(brick)  		: 将积木安装在游乐场中，失败返回false
+		elim				: 消除符合规则的小正方
+		isGameOver			: 根据生成器来判断当前状态下是否game over
+*/
+var Kursaal = Container.subClass({
+	init: function() {
+		this._super();
+		this.map = (function(that) {
+			var ret = new Array(config.mapSize);
+			for (var i = 0, len = ret.length; i < len; i++) {
+				var arr = new Array(config.mapSize);
+				for (var j = 0, jlen = arr.length; j < jlen; j++) {
+					arr[j] = {
+						square: null,
+						isEmpty: true
+					};
+				}
+				ret[i] = arr;
+			}
+			return ret;
+		})(this);
+
+		this.mapWidth = config.mapSize * config.size;
+		this.mapHeight = config.mapSize * config.size;
+	},
+	addLittleSquare: function(square) {
+		this.addChild(square.shape);
+	},
+	removeLittleSquare: function(square) {
+		return this.removeChild(square.shape);
+	},
+	settle: function(brick) {
+		if (!(brick instanceof Brick)) {
+			return {
+				succ: false,
+				msg: 'the param is not a brick!'
+			};
+		}
+		if (!this.contain(brick)) {
+			return {
+				succ: false,
+				msg: 'the param is not inside the kursaal!'
+			};
+		}
+
+		// 首先检查当前放置的位置是否可行
+		var that = this,
+			available = true,
+			coordinates = [];
+
+		brick.shapeDesc.forEach(function(val, key, arr) {
+			// 计算出积木中每个正方所落在的位置
+			var square = val.item,
+				squareX = square.pos.x + brick.pos.x,
+				squareY = square.pos.y + brick.pos.y,
+				locaX = 0,
+				locaY = 0;
+
+			while (squareX - (config.size * locaX + that.pos.x) > config.size / 2) {
+				locaX++;
+			}
+
+			while (squareY - (config.size * locaY + that.pos.y) > config.size / 2) {
+				locaY++;
+			}
+
+			if (!that.map[locaX][locaY].isEmpty) {
+				available = false;
+				return false;
+			} else {
+				// 当前正方可行，记录其需要摆放的坐标
+				coordinates.push({
+					x: locaX,
+					y: locaY,
+					listIndex: key
+				});
+			}
+		});
+
+		if (!available) {
+			return {
+				succ: false,
+				msg: 'the position is unavailable!'
+			};
+		}
+
+		// 若可行，则放置积木
+		coordinates.forEach(function(coordinate) {
+			var square = brick.shapeDesc[coordinate.listIndex].item;
+
+			// 1.更新所属关系
+			brick.releaseLittleSquare(square);
+			that.addLittleSquare(square);
+
+			// 2.更新map状态
+			that.map[coordinate.x][coordinate.y].square = square;
+			that.map[coordinate.x][coordinate.y].isEmpty = false;
+
+			// 3.更新小正方位置
+			square.moveTo(coordinate.x * config.size, coordinate.y * config.size);
+		});
+	},
+	contain: function(brick) {
+		if (!(brick instanceof Brick)) {
+			return false;
+		}
+
+		var that = this,
+			flag = true;
+
+		// 检测积木里所有的正方是否都落在了游乐场里
+		brick.shapeDesc.forEach(function(val, key, arr) {
+			// 位置的比较需要一致的参照物，在这里应该是stage
+			var square = val.item,
+				squareX = square.pos.x + brick.pos.x,
+				squareY = square.pos.y + brick.pos.y;
+
+			if (squareX >= that.pos.x && squareX <= (that.pos.x + that.mapWidth - config.size) && squareY >= that.pos.y && squareY <= (that.pos.y + that.mapHeight - config.size)) {
+				return true;
+			} else {
+				flag = false;
+				return false;
+			}
+		});
+
+		return flag;
+	},
+	elim: function() {
+		var map = this.map,
+			elimList = [],
+			that = this,
+			i, j, ilen, jlen;
+
+		// 1.纵向检查
+		for (i = 0, ilen = map.length; i < ilen; i++) {
+			var needElim = true;
+			for (j = 0, jlen = map[i].length; j < jlen; j++) {
+				if (map[i][j].isEmpty) {
+					needElim = false;
+					break;
+				}
+			}
+
+			if (needElim) {
+				elimList.push({
+					type: 'vertical',
+					begin: {
+						x: i,
+						y: 0
+					},
+					end: {
+						x: i,
+						y: jlen - 1
+					}
+				});
+			}
+		}
+
+		// 2.横向检查
+		for (i = 0, ilen = map.length; i < ilen; i++) {
+			var needElim = true;
+			for (j = 0, jlen = map[i].length; j < jlen; j++) {
+				if (map[j][i].isEmpty) {
+					needElim = false;
+					break;
+				}
+			}
+
+			if (needElim) {
+				elimList.push({
+					type: 'horizontal',
+					begin: {
+						x: 0,
+						y: i
+					},
+					end: {
+						x: ilen - 1,
+						y: i
+					}
+				});
+			}
+		}
+
+		// 3.消除
+		elimList.forEach(function(coordinate) {
+			var x = coordinate.begin.x,
+				y = coordinate.begin.y,
+				square = null;
+
+			for (; x === coordinate.end.x && y <= coordinate.end.y || y === coordinate.end.y && x <= coordinate.end.x;) {
+				square = that.map[x][y].square;
+
+				that.removeLittleSquare(square);
+
+				that.map[x][y].square = null;
+				that.map[x][y].isEmpty = true;
+
+				that.update();
+
+				if (coordinate.type === 'horizontal') {
+					x++;
+				} else if (coordinate.type === 'vertical') {
+					y++;
+				}
+			}
+		});
+	},
+	isGameOver: function(generator) {
+		// todo
+		// 判断是否已经game over了
+		// this.map
+		// generator
+	}
+});
+
+/* 小正方类 */
+var LittleSquare = DisplayObj.subClass({
+	init: function(size, color) {
+		this._super();
+		this.color = color || config.color;
+		this.width = size || config.size;
+		this.height = size || config.size;
+
+		// initialize shape
+		// todo
+		this.shape.graphics.beginFill('red').drawRect(0, 0, 50, 50);
 	}
 });
