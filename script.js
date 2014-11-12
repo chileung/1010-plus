@@ -9,6 +9,7 @@
 	public methods:
 		random  	: 生成若干个随机形状的积木,放回到自己的brickList
 		display 	: 展示现存的积木
+		start 		: 启动游戏的方法
 		setKursaal	: 设置要服务的娱乐场
 
 	private methods:
