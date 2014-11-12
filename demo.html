@@ -12,6 +12,19 @@
 <body>
 	<div id="log"></div>
 	<canvas id="myCanvas" width="900" height="900"></canvas>
+	<script>
+		(function(){
+			var node = document.getElementById('myCanvas');
+
+			node.setAttribute('width', window.innerWidth);
+			node.setAttribute('height', window.innerHeight);
+
+			window.onresize = function(){
+				node.setAttribute('width', window.innerWidth);
+				node.setAttribute('height', window.innerHeight);
+			};
+		})();
+	</script>
 	<script src="config.js"></script>
 	<script src="oop.js"></script>
 	<script src="class.js"></script>
