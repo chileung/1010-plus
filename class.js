@@ -59,7 +59,7 @@ var DisplayObj = Object.subClass({
 			config.enableMoving : 是否允许移动
 
 	private properties:
-		obj  _offset    		: 触摸点距离坐标信息的距离，x & y
+		obj  _offset    	: 触摸点距离坐标信息的距离，x & y
 		
 	public methods:
 		addChild(child)		: 添加子组件到Container实例中，接受多种参数格式：单个对象、对象数组、未命名参数对象 
@@ -197,11 +197,13 @@ var Container = Object.subClass({
 		_pressUpHandler : 鼠标松开事件handler(扩展父类的方法)
 */
 var Brick = Container.subClass({
-	init: function() {
+	init: function(shapeName) {
 		this._super();
 
 		// 引用类型的值不可以作为父类共享属性
-		this.shapeDesc = [];
+		this.shapeDesc = JSON.parse(config.shapes[shapeName]);
+
+		this.setOut();
 	},
 	releaseLittleSquare: function(square) {
 		// 仅仅是释放子组件，并没有更新shapeDesc里的关系
@@ -230,14 +232,6 @@ var Brick = Container.subClass({
 		// 子类扩展该方法
 		this.kursaal.settle(this);
 		this.kursaal.elim();
-	}
-});
-
-/* 具体的积木类 */
-var VerticalLine2 = Brick.subClass({
-	init: function() {
-		this._super();
-		this.shapeDesc = JSON.parse(config.shapes.verticalLine2);
 	}
 });
 
