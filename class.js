@@ -602,10 +602,12 @@ var RandomBrickGenerator = Container.subClass({
 		var that = this;
 
 		// 设置积木的属性
-		this.brickList.forEach(function(brick) {
-			that.addChild(brick.container);
-			brick.setKursaal(that.kursaal);
-		});
+		for (var i = 0, len = this.brickList.length; i < len; i++) {
+			this.addChild(this.brickList[i].container);
+			this.brickList[i].setKursaal(this.kursaal);
+
+			this.brickList[i].moveTo(i * config.size * 4, 0);
+		}
 
 		this.update();
 	},

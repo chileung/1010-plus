@@ -6,8 +6,8 @@ var generator = new RandomBrickGenerator();
 generator.setKursaal(playground);
 
 // 摆放位置
-generator.moveTo(400, 700);
-playground.moveTo(400, 100);
+generator.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, config.stage.canvas.height - 25 - config.size * 5);
+playground.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, 100);
 
 // 启动游戏
 generator.start();
