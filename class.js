@@ -632,6 +632,10 @@ var RandomBrickGenerator = Container.subClass({
 		}
 		return ret;
 	})(),
+	_pressDownHandler:function() {
+		// 记录现有积木的位置，以便其摆放失败后可以返回原位
+		// todo
+	},
 	_pressUpHandler: function() {
 		this._super.apply(this, arguments);
 
@@ -646,6 +650,9 @@ var RandomBrickGenerator = Container.subClass({
 				i++;
 			}
 		}
+
+		// 将移动失败的积木放回原位
+		// todo
 
 		if (this.brickList.length !== 0 && this.kursaal.isGameOver(this)) {
 			// todo
