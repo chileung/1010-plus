@@ -41,12 +41,10 @@ var DisplayObj = Object.subClass({
 	move: function(x, y) {
 		this.pos.x += x;
 		this.pos.y += y;
-		this.update();
 	},
 	moveTo: function(x, y) {
 		this.pos.x = x;
 		this.pos.y = y;
-		this.update();
 	},
 	stage: config.stage
 });
@@ -134,7 +132,6 @@ var Container = Object.subClass({
 				},
 				set: function(value) {
 					that.container.x = value;
-					that.update();
 				}
 			},
 			y: {
@@ -143,7 +140,6 @@ var Container = Object.subClass({
 				},
 				set: function(value) {
 					that.container.y = value;
-					that.update();
 				}
 			},
 			stageX: {
@@ -201,12 +197,10 @@ var Container = Object.subClass({
 	move: function(x, y) {
 		this.pos.x += x;
 		this.pos.y += y;
-		this.update();
 	},
 	moveTo: function(x, y) {
 		this.pos.x = x;
 		this.pos.y = y;
-		this.update();
 	},
 	_pressMoveHandler: function(evt, _offset) {
 		this.moveTo(evt.stageX + _offset.x, evt.stageY + _offset.y);
@@ -422,6 +416,9 @@ var Kursaal = Container.subClass({
 			square.moveTo(coordinate.x * config.size, coordinate.y * config.size);
 		});
 	},
+	canSettle:function(){
+		this.map
+	},
 	contain: function(brick) {
 		if (!(brick instanceof Brick)) {
 			return false;
@@ -519,8 +516,6 @@ var Kursaal = Container.subClass({
 				that.map[x][y].square = null;
 				that.map[x][y].isEmpty = true;
 
-				that.update();
-
 				if (coordinate.type === 'horizontal') {
 					x++;
 				} else if (coordinate.type === 'vertical') {
@@ -530,10 +525,16 @@ var Kursaal = Container.subClass({
 		});
 	},
 	isGameOver: function(generator) {
-		// todo
-		// 判断是否已经game over了
-		// this.map
-		// generator
+		var that = this,
+			isOver = true;
+		generator.brickList.forEach(function(brick){
+			// 检查剩余的积木里是否还有一块能放进娱乐场，只要还有一块能够放进去，就还不算输
+			if(that.canSettle(brick)){
+				isOver = false;
+				return false;
+			}			
+		});
+		return isOver;
 	}
 });
 
@@ -608,8 +609,6 @@ var RandomBrickGenerator = Container.subClass({
 
 			this.brickList[i].moveTo(i * config.size * 4, 0);
 		}
-
-		this.update();
 	},
 	start: function() {
 		this.random().display();
@@ -635,7 +634,10 @@ var RandomBrickGenerator = Container.subClass({
 			}
 		}
 
-		if (this.brickList.length === 0) {
+		if (this.kursaal.isGameOver(this)) {
+			// todo
+			alert('game over ~');
+		}else if (this.brickList.length === 0) {
 			this.random().display();
 		}
 	}
