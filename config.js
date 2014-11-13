@@ -2,7 +2,7 @@
 var config = {
 	mapSize: 10,
 	size: 50,
-	randomCount: 3,
+	randomCount: 1,
 	color: 'red',
 	canvasElm: 'myCanvas',
 	stage: new createjs.Stage('myCanvas'),
