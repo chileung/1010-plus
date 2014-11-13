@@ -16,11 +16,12 @@
 		_pressUpHandler : 鼠标松开事件handler
 */
 var RandomBrickGenerator = Container.subClass({
-	init: function() {
-		this._super();
+	init: function(options) {
+		options = options || {};
+		this._super(options);
 
 		this.brickList = [];
-		this.kursaal = null;
+		this.kursaal = options.kursaal || null;
 
 		this.container.on('pressup', this._pressUpHandler, this);
 	},
@@ -32,7 +33,11 @@ var RandomBrickGenerator = Container.subClass({
 			return this;
 		}
 		for (var i = 0; i < config.randomCount; i++) {
-			this.brickList.push(new Brick(this._randomList[parseInt(Math.random() * this._randomList.length)]));
+			this.brickList.push(new Brick({
+				shapeName: this._randomList[parseInt(Math.random() * this._randomList.length)],
+				parent: this,
+				enableMoving: true
+			}));
 		}
 		return this;
 	},
@@ -47,7 +52,6 @@ var RandomBrickGenerator = Container.subClass({
 		this.brickList.forEach(function(brick) {
 			that.addChild(brick.container);
 			brick.setKursaal(that.kursaal);
-			brick.config.enableMoving = true;
 		});
 
 		this.update();
@@ -63,6 +67,7 @@ var RandomBrickGenerator = Container.subClass({
 		return ret;
 	})(),
 	_pressUpHandler: function() {
+		console.log('generator pressup');
 		this._super.apply(this, arguments);
 
 		// 检查积木是否已经安装到娱乐场中
@@ -81,7 +86,6 @@ var RandomBrickGenerator = Container.subClass({
 		}
 	}
 });
-
 
 
 // main
