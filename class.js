@@ -1,7 +1,8 @@
 /* 展示组件类
 	public properties:
  		obj shape : Shape实例
- 		obj pos   : 坐标信息，x & y
+ 		obj pos   : 坐标信息
+ 			pos.x, pos.y : 相对于所属容器的坐标
  		obj stage : 公共的Stage实例
 
  	public methods:
@@ -51,10 +52,16 @@ var DisplayObj = Object.subClass({
 });
 
 /* 容器组件类
+	init options:
+		parent 		 : 当前container的父container的引用
+		enableMoving : 设置是否允许移动
 	public properties:
 		obj container : Container实例
+		obj parent	  : 当前组件的父组件的引用
 		obj stage 	  : 公共的Stage实例
-		obj pos 	  : 坐标信息，x & y
+		obj pos 	  : 坐标信息
+			pos.x, pos.y 			: 相对于所属容器的坐标
+			pos.stageX, pos.stageY	: 相对于stage实例的坐标，通过parent的递归来计算
 		obj config	  : 配置信息
 			config.enableMoving : 是否允许移动
 
@@ -74,29 +81,33 @@ var DisplayObj = Object.subClass({
 		_pressUpHandler 	: 鼠标松开事件handler
 */
 var Container = Object.subClass({
-	init: function() {
+	init: function(options) {
 		var that = this;
 		// 每一个容器都有一个container实例
 		this.container = new createjs.Container();
 
+		// 可以通过options设定父container
+		this.parent = options.parent || null;
+
 		this.stage.addChild(this.container);
 
-		var _offset = {
-			x: 0,
-			y: 0
-		};
+		var stageX = 0,
+			stageY = 0,
+			enableMoving = false,
+			_offset = {
+				x: 0,
+				y: 0
+			};
 
-		this.config = Object.defineProperties({
-			value: false
-		}, {
+		this.config = Object.defineProperties({}, {
 			enableMoving: {
 				get: function() {
-					return this.value;
+					return enableMoving;
 				},
 				set: function(value) {
-					this.value = value;
+					enableMoving = !!value;
 
-					if (this.value) {
+					if (enableMoving) {
 						// 绑定事件
 						that.container.off('mousedown', that._mouseDownHandler);
 						that.container.on('mousedown', that._mouseDownHandler, that, false, _offset);
@@ -113,6 +124,8 @@ var Container = Object.subClass({
 				}
 			}
 		});
+
+		this.config.enableMoving = options.enableMoving || false;
 
 		this.pos = Object.defineProperties({}, {
 			x: {
@@ -131,6 +144,28 @@ var Container = Object.subClass({
 				set: function(value) {
 					that.container.y = value;
 					that.update();
+				}
+			},
+			stageX: {
+				get: function() {
+					var x = 0,
+						obj = that;
+					while (!!obj) {
+						x += obj.pos.x;
+						obj = obj.parent;
+					}
+					return x;
+				}
+			},
+			stageY: {
+				get: function() {
+					var y = 0,
+						obj = that;
+					while (!!obj) {
+						y += obj.pos.y;
+						obj = obj.parent;
+					}
+					return y;
 				}
 			}
 		});
@@ -181,29 +216,33 @@ var Container = Object.subClass({
 		_offset.y = this.pos.y - evt.stageY;
 	},
 	_pressUpHandler: function(evt, _offset) {
-		
+
 	},
 	stage: config.stage
 });
 
 /* 抽象积木类 extend Container
+	init options:
+		shapeName : 形状名称
 	public properties:
 		shapeDesc : 形状描述
 
 	public methods:
-		releaseLittleSquare(square)	: 将小正方从自身中释放，成功则返回true
+		releaseLittleSquare(square)	: 将小正方从自身container实例中删除，同时更新shapeDesc
 		setOut()					: 堆叠成积木
 		setKursaal(kursaal)		 	: 设置即将要放置到的娱乐场
+		isNull						: 当前积木是否已经删除所有小正方
 
 	private methods:
 		_pressUpHandler : 鼠标松开事件handler(扩展父类的方法)
 */
 var Brick = Container.subClass({
-	init: function(shapeName) {
-		this._super();
+	init: function(options) {
+		options = options || {};
+		this._super(options);
 
 		// 引用类型的值不可以作为父类共享属性
-		this.shapeDesc = JSON.parse(config.shapes[shapeName]);
+		this.shapeDesc = JSON.parse(config.shapes[options.shapeName || 'point1']);
 
 		this.setOut();
 	},
@@ -273,8 +312,9 @@ var Brick = Container.subClass({
 		isGameOver			: 根据生成器来判断当前状态下是否game over
 */
 var Kursaal = Container.subClass({
-	init: function() {
-		this._super();
+	init: function(options) {
+		options = options || {};
+		this._super(options);
 		this.map = (function(that) {
 			var ret = new Array(config.mapSize);
 			for (var i = 0, len = ret.length; i < len; i++) {
@@ -292,6 +332,13 @@ var Kursaal = Container.subClass({
 
 		this.mapWidth = config.mapSize * config.size;
 		this.mapHeight = config.mapSize * config.size;
+
+		// temp todo
+		var test = new createjs.Shape();
+		test.graphics.beginFill('yellow').drawRect(0, 0, this.mapWidth, this.mapHeight);
+		this.addChild(test);
+		this.update();
+		// temp end
 	},
 	addLittleSquare: function(square) {
 		this.addChild(square.shape);
@@ -321,8 +368,8 @@ var Kursaal = Container.subClass({
 		brick.shapeDesc.forEach(function(val, key, arr) {
 			// 计算出积木中每个正方所落在的位置
 			var square = val.item,
-				squareX = square.pos.x + brick.pos.x,
-				squareY = square.pos.y + brick.pos.y,
+				squareX = square.pos.x + brick.pos.stageX,
+				squareY = square.pos.y + brick.pos.stageY,
 				locaX = 0,
 				locaY = 0;
 
@@ -382,8 +429,13 @@ var Kursaal = Container.subClass({
 		brick.shapeDesc.forEach(function(val, key, arr) {
 			// 位置的比较需要一致的参照物，在这里应该是stage
 			var square = val.item,
-				squareX = square.pos.x + brick.pos.x,
-				squareY = square.pos.y + brick.pos.y;
+				squareX = square.pos.x + brick.pos.stageX,
+				squareY = square.pos.y + brick.pos.stageY;
+
+			// console.log('square.pos:(' + square.pos.x + ',' + square.pos.y + ')');
+			// console.log('brick.stageXY:(' + brick.pos.stageX + ',' + brick.pos.stageY + ')');
+			// console.log('squareXY  :(' + squareX + ',' + squareY + ')')
+			// console.log('游乐场坐标：(' + that.pos.x + ',' + that.pos.y + ')');
 
 			if (squareX >= that.pos.x && squareX <= (that.pos.x + that.mapWidth - config.size) && squareY >= that.pos.y && squareY <= (that.pos.y + that.mapHeight - config.size)) {
 				return true;
