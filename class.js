@@ -233,7 +233,6 @@ var Container = Object.subClass({
 */
 var Brick = Container.subClass({
 	init: function(options) {
-		options = options || {};
 		this._super(options);
 
 		// 引用类型的值不可以作为父类共享属性
@@ -299,8 +298,6 @@ var Brick = Container.subClass({
 		mapHeight 	: 地图高度
 	
 	public methods:
-		addLittleSquare()		: 添加小正方
-		removeLittleSquare()	: 删除小正方
 		contain(brick) 			: 积木brick是否在游乐场范围内，返回bool
 		settle(brick)  			: 将积木安装在游乐场中，失败返回false
 		elim()					: 消除符合规则的小正方
@@ -335,12 +332,6 @@ var Kursaal = Container.subClass({
 		this.update();
 		// temp end
 	},
-	addLittleSquare: function(square) {
-		this.addChild(square.shape);
-	},
-	removeLittleSquare: function(square) {
-		return this.removeChild(square.shape);
-	},
 	settle: function(brick) {
 		if (!(brick instanceof Brick)) {
 			return {
@@ -360,15 +351,13 @@ var Kursaal = Container.subClass({
 			available = true,
 			coordinates = [];
 
-		brick.shapeDesc.forEach(function(val, key, arr) {
+		brick.shapeDesc.forEach(function(val, key) {
 			// 计算出积木中每个正方所落在的位置
 			// 这里需要实现模糊匹配位置，直接影响到游戏体验
 
 			var square = val.item,
-				squareX = square.pos.x + brick.pos.stageX,
-				squareY = square.pos.y + brick.pos.stageY,
-				centerX = squareX + config.size / 2,
-				centerY = squareY + config.size / 2,
+				centerX = square.pos.x + brick.pos.stageX + config.size / 2,
+				centerY = square.pos.y + brick.pos.stageY + config.size / 2,
 				locaX = 0,
 				locaY = 0;
 
@@ -407,7 +396,7 @@ var Kursaal = Container.subClass({
 
 			// 1.更新所属关系
 			brick.releaseLittleSquare(square);
-			that.addLittleSquare(square);
+			that.addChild(square.shape);
 
 			// 2.更新map状态
 			that.map[coordinate.x][coordinate.y].square = square;
@@ -426,13 +415,11 @@ var Kursaal = Container.subClass({
 			flag = true;
 
 		// 检测积木里所有的正方的中心是否都落在了游乐场里
-		brick.shapeDesc.forEach(function(val, key, arr) {
+		brick.shapeDesc.forEach(function(val) {
 			// 位置的比较需要一致的参照物，在这里应该是stage
 			var square = val.item,
-				squareX = square.pos.x + brick.pos.stageX,
-				squareY = square.pos.y + brick.pos.stageY,
-				centerX = squareX + config.size / 2,
-				centerY = squareY + config.size / 2;
+				centerX = square.pos.x + brick.pos.stageX + config.size / 2,
+				centerY = square.pos.y + brick.pos.stageY + config.size / 2;
 
 			if (centerX >= that.pos.x && centerX <= (that.pos.x + that.mapWidth) && centerY >= that.pos.y && centerY <= (that.pos.y + that.mapHeight)) {
 				return true;
@@ -509,7 +496,7 @@ var Kursaal = Container.subClass({
 			for (; x === coordinate.end.x && y <= coordinate.end.y || y === coordinate.end.y && x <= coordinate.end.x;) {
 				square = that.map[x][y].square;
 
-				that.removeLittleSquare(square);
+				that.removeChild(square.shape);
 
 				that.map[x][y].square = null;
 				that.map[x][y].isEmpty = true;
@@ -530,7 +517,6 @@ var Kursaal = Container.subClass({
 		for (var x = 0, xlen = map.length; x < xlen; x++) {
 			for (var y = 0, ylen = map[x].length; y < ylen; y++) {
 				if (!map[x][y].isEmpty) {
-					console.log(x,y);
 					continue;
 				}
 				// 遍历地图里每个格子，以该格子(x,y)为相对坐标，尝试根据积木的形状描述来组建一块虚拟的积木
@@ -597,7 +583,6 @@ var LittleSquare = DisplayObj.subClass({
 */
 var RandomBrickGenerator = Container.subClass({
 	init: function(options) {
-		options = options || {};
 		this._super(options);
 
 		this.brickList = [];
@@ -626,13 +611,14 @@ var RandomBrickGenerator = Container.subClass({
 			return false;
 		}
 
-		var that = this;
-
 		// 设置积木的属性
 		for (var i = 0, len = this.brickList.length; i < len; i++) {
+			// 添加积木到自己的容器中
 			this.addChild(this.brickList[i].container);
+			// 设置积木即将要放置的娱乐城
 			this.brickList[i].setKursaal(this.kursaal);
-
+			// temp todo
+			// UI层面的布局，待完善
 			this.brickList[i].moveTo(i * config.size * 4, 0);
 		}
 	},
@@ -652,6 +638,7 @@ var RandomBrickGenerator = Container.subClass({
 		// 检查积木是否已经安装到娱乐场中
 		for (var i = 0, len = this.brickList.length; i < len;) {
 			if (this.brickList[i].isNull()) {
+				// 将积木从自己的容器中删除
 				this.removeChild(this.brickList[i].container);
 				this.brickList.splice(i, 1);
 				len--;
