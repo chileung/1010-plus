@@ -430,19 +430,16 @@ var Kursaal = Container.subClass({
 		var that = this,
 			flag = true;
 
-		// 检测积木里所有的正方是否都落在了游乐场里
+		// 检测积木里所有的正方的中心是否都落在了游乐场里
 		brick.shapeDesc.forEach(function(val, key, arr) {
 			// 位置的比较需要一致的参照物，在这里应该是stage
 			var square = val.item,
 				squareX = square.pos.x + brick.pos.stageX,
-				squareY = square.pos.y + brick.pos.stageY;
+				squareY = square.pos.y + brick.pos.stageY,
+				centerX = squareX + config.size / 2,
+				centerY = squareY + config.size / 2;
 
-			// console.log('square.pos:(' + square.pos.x + ',' + square.pos.y + ')');
-			// console.log('brick.stageXY:(' + brick.pos.stageX + ',' + brick.pos.stageY + ')');
-			// console.log('squareXY  :(' + squareX + ',' + squareY + ')')
-			// console.log('游乐场坐标：(' + that.pos.x + ',' + that.pos.y + ')');
-
-			if (squareX >= that.pos.x && squareX <= (that.pos.x + that.mapWidth - config.size) && squareY >= that.pos.y && squareY <= (that.pos.y + that.mapHeight - config.size)) {
+			if (centerX >= that.pos.x && centerX <= (that.pos.x + that.mapWidth) && centerY >= that.pos.y && centerY <= (that.pos.y + that.mapHeight)) {
 				return true;
 			} else {
 				flag = false;
@@ -550,7 +547,7 @@ var LittleSquare = DisplayObj.subClass({
 
 		// initialize shape
 		// todo
-		this.shape.graphics.beginFill('red').drawRect(0, 0, 50, 50);
+		this.shape.graphics.beginFill('red').drawRect(0, 0, this.width, this.height);
 	}
 });
 
@@ -623,7 +620,6 @@ var RandomBrickGenerator = Container.subClass({
 		return ret;
 	})(),
 	_pressUpHandler: function() {
-		console.log('generator pressup');
 		this._super.apply(this, arguments);
 
 		// 检查积木是否已经安装到娱乐场中
