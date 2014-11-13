@@ -219,7 +219,8 @@ var Container = Object.subClass({
 	init options:
 		shapeName : 形状名称
 	public properties:
-		shapeDesc : 形状描述
+		arr shapeDesc : 形状描述
+			元素结构：{x : x坐标, y : y坐标, item : 小正方的引用, isSet : 当前坐标是否已绑定小正方}
 
 	public methods:
 		releaseLittleSquare(square)	: 将小正方从自身container实例中删除，同时更新shapeDesc
@@ -416,9 +417,6 @@ var Kursaal = Container.subClass({
 			square.moveTo(coordinate.x * config.size, coordinate.y * config.size);
 		});
 	},
-	canSettle:function(){
-		this.map
-	},
 	contain: function(brick) {
 		if (!(brick instanceof Brick)) {
 			return false;
@@ -526,14 +524,42 @@ var Kursaal = Container.subClass({
 	},
 	isGameOver: function(generator) {
 		var that = this,
+			map = this.map,
 			isOver = true;
-		generator.brickList.forEach(function(brick){
-			// 检查剩余的积木里是否还有一块能放进娱乐场，只要还有一块能够放进去，就还不算输
-			if(that.canSettle(brick)){
-				isOver = false;
-				return false;
-			}			
-		});
+
+		for (var x = 0, xlen = map.length; x < xlen; x++) {
+			for (var y = 0, ylen = map[x].length; y < ylen; y++) {
+				if (!map[x][y].isEmpty) {
+					console.log(x,y);
+					continue;
+				}
+				// 遍历地图里每个格子，以该格子(x,y)为相对坐标，尝试根据积木的形状描述来组建一块虚拟的积木
+				generator.brickList.forEach(function(brick) {
+					var desc = brick.shapeDesc;
+
+					// 检查剩余的积木里是否还有一块能放进娱乐场，只要还有一块能够放进去，就还不算输
+					for (var i = 1, descLen = desc.length; i < descLen; i++) {
+						var relX = x - desc[0].x - desc[i].x,
+							relY = y - desc[0].y - desc[i].y;
+
+						if (relX < 0 || relX >= config.mapSize || relY < 0 || relY >= config.mapSize || !map[relX][relY].isEmpty) {
+							break;
+						}
+					}
+
+					if (i >= descLen) {
+						// 可以放置
+						isOver = false;
+						return false;
+					}
+				});
+
+				if (!isOver) {
+					return isOver;
+				}
+			}
+		}
+
 		return isOver;
 	}
 });
@@ -634,10 +660,10 @@ var RandomBrickGenerator = Container.subClass({
 			}
 		}
 
-		if (this.kursaal.isGameOver(this)) {
+		if (this.brickList.length !== 0 && this.kursaal.isGameOver(this)) {
 			// todo
 			alert('game over ~');
-		}else if (this.brickList.length === 0) {
+		} else if (this.brickList.length === 0) {
 			this.random().display();
 		}
 	}
