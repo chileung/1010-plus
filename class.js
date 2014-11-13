@@ -71,14 +71,14 @@ var DisplayObj = Object.subClass({
 	public methods:
 		addChild(child)		: 添加子组件到Container实例中，接受多种参数格式：单个对象、对象数组、未命名参数对象 
 		removeChild(child)	: 从Container实例中删除子组件，成功则返回true
-		update				: 更新视图
+		update()			: 更新视图
 		move(x,y)  			: 将组件移动{x,y}个单位
 		moveTo(x,y)			: 将组件移动至{x,y}位置
 
 	private methods:
-		_mouseDownHandler	: 鼠标按下事件handler
-		_pressMoveHandler	: 鼠标移动事件handler
-		_pressUpHandler 	: 鼠标松开事件handler
+		_mouseDownHandler()	: 鼠标按下事件handler
+		_pressMoveHandler()	: 鼠标移动事件handler
+		_pressUpHandler() 	: 鼠标松开事件handler
 */
 var Container = Object.subClass({
 	init: function(options) {
@@ -87,7 +87,7 @@ var Container = Object.subClass({
 		this.container = new createjs.Container();
 
 		// 可以通过options设定父container
-		this.parent = options.parent || null;
+		this.parent = options && options.parent || null;
 
 		this.stage.addChild(this.container);
 
@@ -125,7 +125,7 @@ var Container = Object.subClass({
 			}
 		});
 
-		this.config.enableMoving = options.enableMoving || false;
+		this.config.enableMoving = options && options.enableMoving || false;
 
 		this.pos = Object.defineProperties({}, {
 			x: {
@@ -231,10 +231,10 @@ var Container = Object.subClass({
 		releaseLittleSquare(square)	: 将小正方从自身container实例中删除，同时更新shapeDesc
 		setOut()					: 堆叠成积木
 		setKursaal(kursaal)		 	: 设置即将要放置到的娱乐场
-		isNull						: 当前积木是否已经删除所有小正方
+		isNull()					: 当前积木是否已经删除所有小正方
 
 	private methods:
-		_pressUpHandler : 鼠标松开事件handler(扩展父类的方法)
+		_pressUpHandler() : 鼠标松开事件handler(扩展父类的方法)
 */
 var Brick = Container.subClass({
 	init: function(options) {
@@ -304,12 +304,12 @@ var Brick = Container.subClass({
 		mapHeight 	: 地图高度
 	
 	public methods:
-		addLittleSquare		: 添加小正方
-		removeLittleSquare	: 删除小正方
-		contain(brick) 		: 积木brick是否在游乐场范围内，返回bool
-		settle(brick)  		: 将积木安装在游乐场中，失败返回false
-		elim				: 消除符合规则的小正方
-		isGameOver			: 根据生成器来判断当前状态下是否game over
+		addLittleSquare()		: 添加小正方
+		removeLittleSquare()	: 删除小正方
+		contain(brick) 			: 积木brick是否在游乐场范围内，返回bool
+		settle(brick)  			: 将积木安装在游乐场中，失败返回false
+		elim()					: 消除符合规则的小正方
+		isGameOver()			: 根据生成器来判断当前状态下是否game over
 */
 var Kursaal = Container.subClass({
 	init: function(options) {
@@ -546,5 +546,94 @@ var LittleSquare = DisplayObj.subClass({
 		// initialize shape
 		// todo
 		this.shape.graphics.beginFill('red').drawRect(0, 0, 50, 50);
+	}
+});
+
+/* 随机积木生成器 extend Container
+	public properties:
+		arr brickList : 现存积木列表
+		obj kursaal   : 要服务的娱乐场的引用
+
+	private properties:
+		arr _randomList : 可供生成器选择的积木类型列表
+
+	public methods:
+		random()  	 : 生成若干个随机形状的积木,放回到自己的brickList
+		display() 	 : 展示现存的积木
+		start() 	 : 启动游戏的方法
+		setKursaal() : 设置要服务的娱乐场
+
+	private methods:
+		_pressUpHandler() : 鼠标松开事件handler
+*/
+var RandomBrickGenerator = Container.subClass({
+	init: function(options) {
+		options = options || {};
+		this._super(options);
+
+		this.brickList = [];
+		this.kursaal = options.kursaal || null;
+
+		this.container.on('pressup', this._pressUpHandler, this);
+	},
+	setKursaal: function(kursaal) {
+		this.kursaal = kursaal;
+	},
+	random: function() {
+		if (this.brickList.length !== 0) {
+			return this;
+		}
+		for (var i = 0; i < config.randomCount; i++) {
+			this.brickList.push(new Brick({
+				shapeName: this._randomList[parseInt(Math.random() * this._randomList.length)],
+				parent: this,
+				enableMoving: true
+			}));
+		}
+		return this;
+	},
+	display: function() {
+		if (!!!this.kursaal) {
+			return false;
+		}
+
+		var that = this;
+
+		// 设置积木的属性
+		this.brickList.forEach(function(brick) {
+			that.addChild(brick.container);
+			brick.setKursaal(that.kursaal);
+		});
+
+		this.update();
+	},
+	start: function() {
+		this.random().display();
+	},
+	_randomList: (function() {
+		var ret = [];
+		for (var shapeName in config.shapes) {
+			ret.push(shapeName);
+		}
+		return ret;
+	})(),
+	_pressUpHandler: function() {
+		console.log('generator pressup');
+		this._super.apply(this, arguments);
+
+		// 检查积木是否已经安装到娱乐场中
+		for (var i = 0, len = this.brickList.length; i < len;) {
+			if (this.brickList[i].isNull()) {
+				this.removeChild(this.brickList[i].container);
+				this.brickList.splice(i, 1);
+				len--;
+			} else {
+				i++;
+			}
+		}
+
+		if (this.brickList.length === 0) {
+			this.random().display();
+		}
 	}
 });
