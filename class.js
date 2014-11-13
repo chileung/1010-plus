@@ -367,17 +367,22 @@ var Kursaal = Container.subClass({
 
 		brick.shapeDesc.forEach(function(val, key, arr) {
 			// 计算出积木中每个正方所落在的位置
+			// 这里需要实现模糊匹配位置，直接影响到游戏体验
+
 			var square = val.item,
 				squareX = square.pos.x + brick.pos.stageX,
 				squareY = square.pos.y + brick.pos.stageY,
+				centerX = squareX + config.size / 2,
+				centerY = squareY + config.size / 2,
 				locaX = 0,
 				locaY = 0;
 
-			while (squareX - (config.size * locaX + that.pos.x) > config.size / 2) {
+			// 计算小正方的中心落在哪个位置
+			while (centerX - (config.size * locaX + that.pos.x) > config.size) {
 				locaX++;
 			}
 
-			while (squareY - (config.size * locaY + that.pos.y) > config.size / 2) {
+			while (centerY - (config.size * locaY + that.pos.y) > config.size) {
 				locaY++;
 			}
 
