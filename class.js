@@ -305,7 +305,6 @@ var Brick = Container.subClass({
 */
 var Kursaal = Container.subClass({
 	init: function(options) {
-		options = options || {};
 		this._super(options);
 		this.map = (function(that) {
 			var ret = new Array(config.mapSize);
@@ -586,9 +585,10 @@ var RandomBrickGenerator = Container.subClass({
 		this._super(options);
 
 		this.brickList = [];
-		this.kursaal = options.kursaal || null;
+		this.kursaal = options && options.kursaal || null;
 
 		this.container.on('pressup', this._pressUpHandler, this);
+		this.container.on('mousedown',this._mouseDownHandler, this);
 	},
 	setKursaal: function(kursaal) {
 		this.kursaal = kursaal;
@@ -632,25 +632,43 @@ var RandomBrickGenerator = Container.subClass({
 		}
 		return ret;
 	})(),
+	_mouseDownHandler: function() {
+		// 记录积木被移动前的位置，以便摆放失败后可以自动回到原位
+		this.brickList.forEach(function(brick) {
+			brick.originalCoordinate = {
+				x: brick.pos.x,
+				y: brick.pos.y
+			};
+		});
+	},
 	_pressUpHandler: function() {
 		this._super.apply(this, arguments);
 
+		var list = this.brickList;
+
 		// 检查积木是否已经安装到娱乐场中
-		for (var i = 0, len = this.brickList.length; i < len;) {
-			if (this.brickList[i].isNull()) {
+		for (var i = 0, len = list.length; i < len;) {
+			if (list[i].isNull()) {
 				// 将积木从自己的容器中删除
-				this.removeChild(this.brickList[i].container);
-				this.brickList.splice(i, 1);
+				this.removeChild(list[i].container);
+				list.splice(i, 1);;
 				len--;
 			} else {
 				i++;
 			}
 		}
 
-		if (this.brickList.length !== 0 && this.kursaal.isGameOver(this)) {
+		// 对放置失败的积木，需要放回原来的位置
+		for (i = 0, len = list.length; i < len; i++) {
+			if (list[i].originalCoordinate.x !== list[i].pos.x || list[i].originalCoordinate.y !== list[i].pos.y) {
+				list[i].moveTo(list[i].originalCoordinate.x, list[i].originalCoordinate.y);
+			}
+		}
+
+		if (list.length !== 0 && this.kursaal.isGameOver(this)) {
 			// todo
 			alert('game over ~');
-		} else if (this.brickList.length === 0) {
+		} else if (list.length === 0) {
 			this.random().display();
 		}
 	}
