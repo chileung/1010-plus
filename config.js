@@ -3,11 +3,12 @@
     var myStage = new createjs.Stage('myCanvas');
     that.config = {
         mapSize: 10,
-        size: parseInt(myStage.canvas.width / 12),
+        size: parseInt(myStage.canvas.width / 14),
         randomCount: 3,
         canvasElm: 'myCanvas',
         color: 'red',
         stage: myStage,
+        gap: 3,
         shapes: {
             point1: '[{"x": 0, "y": 0}]',
             verticalLine2: '[{"x": 0, "y": 0}, {"x": 0,"y": 1}]',

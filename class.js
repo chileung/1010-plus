@@ -272,7 +272,7 @@ var Brick = Container.subClass({
 				var square = new LittleSquare();
 				that.addChild(square.shape);
 
-				square.moveTo(val.x * config.size, val.y * config.size);
+				square.moveTo(val.x * (config.size + config.gap), val.y * (config.size + config.gap));
 				arr[key].item = square;
 				arr[key].isSet = true;
 			}
@@ -321,10 +321,22 @@ var Kursaal = Container.subClass({
 			return ret;
 		})(this);
 
-		this.mapWidth = config.mapSize * config.size;
-		this.mapHeight = config.mapSize * config.size;
+		this.mapWidth = config.mapSize * config.size + config.gap * (config.mapSize - 1);
+		this.mapHeight = config.mapSize * config.size + config.gap * (config.mapSize - 1);
 
-		// temp todo
+		// 建立背景图
+		var bg = new Container({
+			parent: this,
+			enableMoving: false
+		});
+
+		// for (var i = 0; i < config.mapSize; i++) {
+		// 	for (var j = 0; j < config.mapSize; j++) {
+		// 		var square = new LittleSquare();
+
+		// 	}
+		// }
+
 		var test = new createjs.Shape();
 		test.graphics.beginFill('yellow').drawRect(0, 0, this.mapWidth, this.mapHeight);
 		this.addChild(test);
@@ -361,14 +373,14 @@ var Kursaal = Container.subClass({
 				locaY = 0;
 
 			// 计算小正方的中心落在哪个位置
-			while (centerX - (config.size * locaX + that.pos.x) > config.size) {
+			while (centerX - ((config.size + config.gap) * locaX + that.pos.x) >= config.size) {
 				locaX++;
 			}
 
-			while (centerY - (config.size * locaY + that.pos.y) > config.size) {
+			while (centerY - ((config.size + config.gap) * locaY + that.pos.y) >= config.size) {
 				locaY++;
 			}
-
+			
 			if (!that.map[locaX][locaY].isEmpty) {
 				available = false;
 				return false;
@@ -402,7 +414,7 @@ var Kursaal = Container.subClass({
 			that.map[coordinate.x][coordinate.y].isEmpty = false;
 
 			// 3.更新小正方位置
-			square.moveTo(coordinate.x * config.size, coordinate.y * config.size);
+			square.moveTo(coordinate.x * config.size + config.gap * coordinate.x, coordinate.y * config.size + config.gap * coordinate.y);
 		});
 	},
 	contain: function(brick) {
@@ -557,9 +569,21 @@ var LittleSquare = DisplayObj.subClass({
 		this.width = size || config.size;
 		this.height = size || config.size;
 
+		var PI = Math.PI;
+
 		// initialize shape
-		// todo
-		this.shape.graphics.beginFill('red').drawRect(0, 0, this.width, this.height);
+		this.shape.graphics
+			.beginStroke('red')
+			.beginFill('red')
+			.moveTo(0, 5)
+			.lineTo(0, this.height - 10)
+			.arc(5, this.height - 5, 5, -PI, PI / 2, true)
+			.lineTo(this.width - 5, this.height)
+			.arc(this.width - 5, this.height - 5, 5, PI / 2, 0, true)
+			.lineTo(this.width, 5)
+			.arc(this.width - 5, 5, 5, 0, -PI / 2, true)
+			.lineTo(5, 0)
+			.arc(5, 5, 5, -PI / 2, PI, true);
 	}
 });
 
@@ -588,7 +612,7 @@ var RandomBrickGenerator = Container.subClass({
 		this.kursaal = options && options.kursaal || null;
 
 		this.container.on('pressup', this._pressUpHandler, this);
-		this.container.on('mousedown',this._mouseDownHandler, this);
+		this.container.on('mousedown', this._mouseDownHandler, this);
 	},
 	setKursaal: function(kursaal) {
 		this.kursaal = kursaal;
