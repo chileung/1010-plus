@@ -254,7 +254,8 @@ var Brick = Container.subClass({
 		// 引用类型的值不可以作为父类共享属性
 		this.shapeDesc = JSON.parse(config.shapes[options.shapeName || 'point1']);
 
-		this.score = this.shapeDesc.length;
+		// 积木分数等于小正方的数量
+		this.score = this.shapeDesc.length || 0;
 
 		this.setOut(options.color);
 	},
@@ -643,7 +644,7 @@ var RandomBrickGenerator = Container.subClass({
 		this.brickList = [];
 		this.kursaal = options && options.kursaal || null;
 
-		this.width = config.mapSize * config.size + config.gap * (config.mapSize - 1);;
+		this.width = config.stage.canvas.width;
 	},
 	setKursaal: function(kursaal) {
 		this.kursaal = kursaal;
@@ -676,6 +677,8 @@ var RandomBrickGenerator = Container.subClass({
 			return false;
 		}
 
+		var brickWidth = config.size * 5 + config.gap * 4;
+
 		// 设置积木的属性
 		for (var i = 0, len = this.brickList.length; i < len; i++) {
 			var brick = this.brickList[i];
@@ -686,7 +689,7 @@ var RandomBrickGenerator = Container.subClass({
 			// 缩放
 			brick.pos.scaleX = brick.pos.scaleY = config.scaleDown;
 			// 布局
-			brick.moveTo(this.width / 3 * i, 0);
+			brick.moveTo(this.width / 3 * i - (brickWidth / 2 - this.width / 6), 0);
 		}
 	},
 	start: function() {
