@@ -286,6 +286,8 @@ var Brick = Container.subClass({
 		// 引用类型的值不可以作为父类共享属性
 		this.shapeDesc = JSON.parse(config.shapes[options.shapeName || 'point1']);
 
+		this.name = options.shapeName || 'point1';
+
 		// 积木分数等于小正方的数量
 		this.score = this.shapeDesc.length || 0;
 
@@ -581,8 +583,7 @@ var Kursaal = Container.subClass({
 		});
 	},
 	isGameOver: function(generator) {
-		var that = this,
-			map = this.map,
+		var map = this.map,
 			isOver = true;
 
 		for (var x = 0, xlen = map.length; x < xlen; x++) {
@@ -590,7 +591,7 @@ var Kursaal = Container.subClass({
 				if (!map[x][y].isEmpty) {
 					continue;
 				}
-				// 遍历地图里每个格子，以该格子(x,y)为相对坐标，尝试根据积木的形状描述来组建一块虚拟的积木
+				// 遍历地图里每个空的格子，以该格子(x,y)为相对坐标，尝试根据积木的形状描述来组建一块虚拟的积木
 				generator.brickList.forEach(function(brick) {
 					if (!brick) {
 						return true;
@@ -599,8 +600,8 @@ var Kursaal = Container.subClass({
 
 					// 检查剩余的积木里是否还有一块能放进娱乐场，只要还有一块能够放进去，就还不算输
 					for (var i = 1, descLen = desc.length; i < descLen; i++) {
-						var relX = x - desc[0].x - desc[i].x,
-							relY = y - desc[0].y - desc[i].y;
+						var relX = x - (desc[0].x - desc[i].x),
+							relY = y - (desc[0].y - desc[i].y);
 
 						if (relX < 0 || relX >= config.mapSize || relY < 0 || relY >= config.mapSize || !map[relX][relY].isEmpty) {
 							break;
