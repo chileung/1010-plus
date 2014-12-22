@@ -11,7 +11,7 @@ var generator = new RandomBrickGenerator({
 generator.setKursaal(playground);
 
 // 摆放位置
-generator.moveTo((config.stage.canvas.width - playground.mapWidth) / 4, playground.mapHeight + 100 + config.size * 1.5);
+generator.moveTo(30, playground.mapHeight + 100 + config.size * 1.5);
 playground.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, 100);
 counter.moveTo((config.stage.canvas.width - playground.mapWidth) / 2 , 50);
 
