@@ -53,8 +53,9 @@ var DisplayObj = Object.subClass({
 
 /* 容器组件类
 	init options:
-		parent 		 : 当前container的父container的引用
+		parent 		 : 当前container的父container的引用(用于计算相对于stage的offset)
 		enableMoving : 设置是否允许移动
+
 	public properties:
 		obj container : Container实例
 		obj parent	  : 当前组件的父组件的引用
@@ -62,15 +63,14 @@ var DisplayObj = Object.subClass({
 		obj pos 	  : 坐标信息
 			pos.x, pos.y 			: 相对于所属容器的坐标
 			pos.stageX, pos.stageY	: 相对于stage实例的坐标，通过parent的递归来计算
+			pos.scaleX, pos.scaleY	: 放大缩小坐标
 		obj config	  : 配置信息
 			config.enableMoving : 是否允许移动
-
-	private properties:
-		obj  _offset    	: 触摸点距离坐标信息的距离，x & y
+		obj  _offset  : 触摸点距离坐标信息的距离，x & y
 		
 	public methods:
 		addChild(child)		: 添加子组件到Container实例中，接受多种参数格式：单个对象、对象数组、未命名参数对象 
-		removeChild(child)	: 从Container实例中删除子组件，成功则返回true
+		removeChild(child)	: 从Container实例中删除子组件，（add和remove暂时只支持Container、Shape类型）
 		update()			: 更新视图
 		move(x,y)  			: 将组件移动{x,y}个单位
 		moveTo(x,y)			: 将组件移动至{x,y}位置
@@ -266,18 +266,20 @@ var Container = Object.subClass({
 /* 抽象积木类 extend Container
 	init options:
 		shapeName : 形状名称
+		color 	  : 颜色
+
 	public properties:
-		arr shapeDesc : 形状描述
+		arr shapeDesc : 形状描述数组
 			元素结构：{x : x坐标, y : y坐标, item : 小正方的引用, isSet : 当前坐标是否已绑定小正方}
 
 	public methods:
 		releaseLittleSquare(square)	: 将小正方从自身container实例中删除，同时更新shapeDesc
-		setOut()					: 堆叠成积木
+		setOut(color)				: 堆叠成积木
 		setKursaal(kursaal)		 	: 设置即将要放置到的娱乐场
 		isNull()					: 当前积木是否已经删除所有小正方
-
-	private methods:
-		_pressUpHandler() : 鼠标松开事件handler(扩展父类的方法)
+		bigger()					: 放大当前积木
+		smaller()					: 缩小当前积木
+		resetSize()					: 将积木恢复原状
 */
 var Brick = Container.subClass({
 	init: function(options) {
@@ -347,6 +349,9 @@ var Brick = Container.subClass({
 });
 
 /* 游乐场类 extend Container
+	init options:
+		counter: 一个计分器实例
+
 	public properties:
 		arr map 	: 一个二维的正方地图
 			元素结构：{square : 小正方的引用, isEmpty : 当前元素是否为空}
@@ -354,10 +359,10 @@ var Brick = Container.subClass({
 		mapHeight 	: 地图高度
 	
 	public methods:
-		contain(brick) 			: 积木brick是否在游乐场范围内，返回bool
+		contain(brick) 			: 判断给定的积木是否在游乐场范围内，返回bool
 		settle(brick)  			: 将积木安装在游乐场中，失败返回false
 		elim()					: 消除符合规则的小正方
-		isGameOver()			: 根据生成器来判断当前状态下是否game over
+		isGameOver()			: 根据生成器中剩余的积木来判断当前状态下是否game over
 */
 var Kursaal = Container.subClass({
 	init: function(options) {
@@ -659,6 +664,8 @@ var LittleSquare = DisplayObj.subClass({
 	public properties:
 		arr brickList : 现存积木列表
 		obj kursaal   : 要服务的娱乐场的引用
+		obj curBrick  : 当前选中的积木的引用
+		int width     : 生成器的宽度
 
 	private properties:
 		arr _randomList : 可供生成器选择的积木类型列表
@@ -670,7 +677,9 @@ var LittleSquare = DisplayObj.subClass({
 		setKursaal() : 设置要服务的娱乐场
 
 	private methods:
-		_pressUpHandler() : 鼠标松开事件handler
+		_pressUpHandler()   : 鼠标松开事件handler
+		_mouseDownHandler() : 鼠标点击事件handler
+		_pressMoveHandler() : 鼠标移动事件handler
 */
 var RandomBrickGenerator = Container.subClass({
 	init: function(options) {
@@ -845,6 +854,14 @@ var RandomBrickGenerator = Container.subClass({
 	}
 });
 
+/* 计分器 extend Container
+	public properties:
+		int score : 分数
+
+	public methods:
+		add(score)		: 增加分数
+		subtract(score) : 减少分数
+*/
 var Counter = Container.subClass({
 	init: function() {
 		this._super();
