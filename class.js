@@ -680,7 +680,24 @@ var RandomBrickGenerator = Container.subClass({
 		this.kursaal = null;
 		this.curBrick = null;
 
-		this.width = config.stage.canvas.width;
+		this.width = config.stage.canvas.width - 30;
+
+		// 用一个透明色的Shape垫底
+		var bg = new createjs.Shape();
+
+		this.addChild(bg);
+
+		bg.graphics.beginStroke('#000')
+			.beginFill('#000')
+			.drawRect(0, 0, this.width, 5 * config.size + config.gap * 4);
+
+		bg.alpha = 0.01;
+
+		bg.on('pressmove', function(evt) {
+			if (this.curBrick) {
+				this.curBrick._pressMoveHandler.call(this.curBrick, evt, this.curBrick._offset);
+			}
+		}, this);
 	},
 	setKursaal: function(kursaal) {
 		if (kursaal instanceof Kursaal) {
@@ -755,17 +772,22 @@ var RandomBrickGenerator = Container.subClass({
 
 		var brick = this.brickList[i - 1];
 
+		// 当前区间不一定有积木，可能是空的。
 		// 标记当前选中的积木
-		this.curBrick = brick;
+		this.curBrick = brick || null;
 
-		// 记录积木被移动前的位置，以便摆放失败后可以自动回到原位
-		brick.originalCoordinate = {
-			x: brick.pos.x,
-			y: brick.pos.y
-		};
+		if (this.curBrick) {
+			this.curBrick._mouseDownHandler.call(this.curBrick, evt, this.curBrick._offset);
 
-		// 鼠标按住后，积木放大	
-		brick.bigger();
+			// 记录积木被移动前的位置，以便摆放失败后可以自动回到原位
+			this.curBrick.originalCoordinate = {
+				x: brick.pos.x,
+				y: brick.pos.y
+			};
+
+			// 鼠标按住后，积木放大
+			this.curBrick.bigger();
+		}
 	},
 	_pressUpHandler: function() {
 		// 尝试将当前积木安放在娱乐场里
@@ -845,10 +867,10 @@ var Counter = Container.subClass({
 
 					score = value;
 
-					(function next(){
+					(function next() {
 						text.text = i++;
 
-						if(i <= score){
+						if (i <= score) {
 							setTimeout(next, 50);
 						}
 					})();
