@@ -1,5 +1,8 @@
 // main
-var playground = new Kursaal();
+var counter = new Counter();
+var playground = new Kursaal({
+	counter: counter
+});
 var generator = new RandomBrickGenerator({
 	enableMoving: true
 });
@@ -10,6 +13,7 @@ generator.setKursaal(playground);
 // 摆放位置
 generator.moveTo((config.stage.canvas.width - playground.mapWidth) / 4, playground.mapHeight + 100 + config.size * 1.5);
 playground.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, 100);
+counter.moveTo((config.stage.canvas.width - playground.mapWidth) / 2 , 50);
 
 // 启动游戏
 generator.start();

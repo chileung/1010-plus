@@ -14,6 +14,7 @@
         scaleDown: 0.7,
         scaleUp: 1.1,
         moveUp: 50,
+        fontSize: 20,
         shapes: {
             point1: '[{"x": 2, "y": 2}]',
             verticalLine2: '[{"x": 2, "y": 2}, {"x": 2,"y": 3}]',

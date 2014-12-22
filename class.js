@@ -1,3 +1,5 @@
+'use strict';
+
 /* 展示组件类
 	public properties:
  		obj shape : Shape实例
@@ -110,7 +112,7 @@ var Container = Object.subClass({
 						// 绑定事件
 						that.container.off('mousedown', that._mouseDownHandler);
 						that.container.on('mousedown', that._mouseDownHandler, that, false, that._offset);
-						that.container.off('pressmove', that._pressMoveHandler)
+						that.container.off('pressmove', that._pressMoveHandler);
 						that.container.on('pressmove', that._pressMoveHandler, that, false, that._offset);
 						that.container.off('pressup', that._pressUpHandler);
 						that.container.on('pressup', that._pressUpHandler, that, false, that._offset);
@@ -187,26 +189,57 @@ var Container = Object.subClass({
 		var that = this;
 		if (Object.prototype.toString.apply(child) === '[object Array]') {
 			child.forEach(function(val) {
-				that.container.addChild(val);
+				if (val instanceof createjs.Shape || val instanceof createjs.Container) {
+					that.container.addChild(val);
+				} else if (val.shape && val.shape instanceof createjs.Shape) {
+					that.container.addChild(val.shape);
+				} else if (val.container && val.container instanceof createjs.Container) {
+					that.container.addChild(val.container);
+				}
 			});
 		} else {
-			that.container.addChild(child);
+			if (child instanceof createjs.Shape || child instanceof createjs.Container) {
+				that.container.addChild(child);
+			} else if (child.shape && child.shape instanceof createjs.Shape) {
+				that.container.addChild(child.shape);
+			} else if (child.container && child.container instanceof createjs.Container) {
+				that.container.addChild(child.container);
+			}
 		}
 
 		if (arguments.length > 1) {
 			for (var i = 1, len = arguments.length; i < len; i++) {
-				if (Object.prototype.toString.apply(arguments[i]) === '[object Array]') {
-					for (var j = 0, jlen = arguments[i].length, arr = arguments[i]; j < jlen; j++) {
-						that.container.addChild(arr[j]);
-					}
-				} else {
-					that.container.addChild(arguments[i]);
-				}
+				that.addChild.call(that, arguments[i]);
 			}
 		}
 	},
 	removeChild: function(child) {
-		return this.container.removeChild(child);
+		var that = this;
+		if (Object.prototype.toString.apply(child) === '[object Array]') {
+			child.forEach(function(val) {
+				if (val instanceof createjs.Shape || val instanceof createjs.Container) {
+					that.container.removeChild(val);
+				} else if (val.shape && val.shape instanceof createjs.Shape) {
+					that.container.removeChild(val.shape);
+				} else if (val.container && val.container instanceof createjs.Container) {
+					that.container.removeChild(val.container);
+				}
+			});
+		} else {
+			if (child instanceof createjs.Shape || child instanceof createjs.Container) {
+				that.container.removeChild(child);
+			} else if (child.shape && child.shape instanceof createjs.Shape) {
+				that.container.removeChild(child.shape);
+			} else if (child.container && child.container instanceof createjs.Container) {
+				that.container.removeChild(child.container);
+			}
+		}
+
+		if (arguments.length > 1) {
+			for (var i = 1, len = arguments.length; i < len; i++) {
+				that.removeChild.call(that, arguments[i]);
+			}
+		}
 	},
 	update: function() {
 		this.stage.update();
@@ -226,8 +259,7 @@ var Container = Object.subClass({
 		_offset.x = this.pos.x - evt.stageX;
 		_offset.y = this.pos.y - evt.stageY;
 	},
-	_pressUpHandler: function() {
-	},
+	_pressUpHandler: function() {},
 	stage: config.stage
 });
 
@@ -261,7 +293,7 @@ var Brick = Container.subClass({
 	},
 	releaseLittleSquare: function(square) {
 		// 释放子组件
-		this.removeChild(square.shape);
+		this.removeChild(square);
 
 		// 更新shapeDesc
 		for (var i = 0, len = this.shapeDesc.length; i < len; i++) {
@@ -297,9 +329,6 @@ var Brick = Container.subClass({
 			}
 		});
 	},
-	setKursaal: function(kursaal) {
-		this.kursaal = kursaal;
-	},
 	bigger: function() {
 		this.pos.scaleX = this.pos.scaleY = config.scaleUp;
 		this.pos.y -= config.moveUp;
@@ -312,10 +341,6 @@ var Brick = Container.subClass({
 	},
 	resetSize: function() {
 		this.pos.scaleX = this.pos.scaleY = 1;
-	},
-	_pressUpHandler: function() {
-		this.kursaal.settle(this);
-		this.kursaal.elim();
 	}
 });
 
@@ -352,6 +377,9 @@ var Kursaal = Container.subClass({
 
 		this.mapWidth = config.mapSize * config.size + config.gap * (config.mapSize - 1);
 		this.mapHeight = config.mapSize * config.size + config.gap * (config.mapSize - 1);
+
+		// 实例化一个计分器
+		this.counter = options.counter || null;
 
 		// 建立背景图
 		var bg = new Container({
@@ -425,23 +453,25 @@ var Kursaal = Container.subClass({
 				succ: false,
 				msg: 'the position is unavailable!'
 			};
+		} else {
+			// 可行，则放置积木，并添加积木对应的分数
+			this.counter.add(brick.score);
+
+			coordinates.forEach(function(coordinate) {
+				var square = brick.shapeDesc[coordinate.listIndex].item;
+
+				// 1.更新所属关系
+				brick.releaseLittleSquare(square);
+				that.addChild(square);
+
+				// 2.更新map状态
+				that.map[coordinate.x][coordinate.y].square = square;
+				that.map[coordinate.x][coordinate.y].isEmpty = false;
+
+				// 3.更新小正方位置
+				square.moveTo(coordinate.x * config.size + config.gap * coordinate.x, coordinate.y * config.size + config.gap * coordinate.y);
+			});
 		}
-
-		// 若可行，则放置积木
-		coordinates.forEach(function(coordinate) {
-			var square = brick.shapeDesc[coordinate.listIndex].item;
-
-			// 1.更新所属关系
-			brick.releaseLittleSquare(square);
-			that.addChild(square.shape);
-
-			// 2.更新map状态
-			that.map[coordinate.x][coordinate.y].square = square;
-			that.map[coordinate.x][coordinate.y].isEmpty = false;
-
-			// 3.更新小正方位置
-			square.moveTo(coordinate.x * config.size + config.gap * coordinate.x, coordinate.y * config.size + config.gap * coordinate.y);
-		});
 	},
 	contain: function(brick) {
 		if (!(brick instanceof Brick)) {
@@ -472,11 +502,12 @@ var Kursaal = Container.subClass({
 		var map = this.map,
 			elimList = [],
 			that = this,
+			needElim = true,
 			i, j, ilen, jlen;
 
 		// 1.纵向检查
 		for (i = 0, ilen = map.length; i < ilen; i++) {
-			var needElim = true;
+			needElim = true;
 			for (j = 0, jlen = map[i].length; j < jlen; j++) {
 				if (map[i][j].isEmpty) {
 					needElim = false;
@@ -501,7 +532,7 @@ var Kursaal = Container.subClass({
 
 		// 2.横向检查
 		for (i = 0, ilen = map.length; i < ilen; i++) {
-			var needElim = true;
+			needElim = true;
 			for (j = 0, jlen = map[i].length; j < jlen; j++) {
 				if (map[j][i].isEmpty) {
 					needElim = false;
@@ -526,6 +557,9 @@ var Kursaal = Container.subClass({
 
 		// 3.消除
 		elimList.forEach(function(coordinate) {
+			// 加分
+			that.counter.add(config.mapSize);
+
 			var x = coordinate.begin.x,
 				y = coordinate.begin.y,
 				square = null;
@@ -533,7 +567,7 @@ var Kursaal = Container.subClass({
 			for (; x === coordinate.end.x && y <= coordinate.end.y || y === coordinate.end.y && x <= coordinate.end.x;) {
 				square = that.map[x][y].square;
 
-				that.removeChild(square.shape);
+				that.removeChild(square);
 
 				that.map[x][y].square = null;
 				that.map[x][y].isEmpty = true;
@@ -642,12 +676,18 @@ var RandomBrickGenerator = Container.subClass({
 		this._super(options);
 
 		this.brickList = [];
-		this.kursaal = options && options.kursaal || null;
+		this.kursaal = null;
+		this.curBrick = null;
 
 		this.width = config.stage.canvas.width;
 	},
 	setKursaal: function(kursaal) {
-		this.kursaal = kursaal;
+		if (kursaal instanceof Kursaal) {
+			this.kursaal = kursaal;
+			return true;
+		} else {
+			return false;
+		}
 	},
 	random: function() {
 		var hasBrick = false;
@@ -683,9 +723,7 @@ var RandomBrickGenerator = Container.subClass({
 		for (var i = 0, len = this.brickList.length; i < len; i++) {
 			var brick = this.brickList[i];
 			// 添加积木到自己的容器中
-			this.addChild(brick.container);
-			// 设置积木即将要放置的娱乐城
-			brick.setKursaal(this.kursaal);
+			this.addChild(brick);
 			// 缩放
 			brick.pos.scaleX = brick.pos.scaleY = config.scaleDown;
 			// 布局
@@ -715,7 +753,10 @@ var RandomBrickGenerator = Container.subClass({
 		}
 
 		var brick = this.brickList[i - 1];
-		
+
+		// 标记当前选中的积木
+		this.curBrick = brick;
+
 		// 记录积木被移动前的位置，以便摆放失败后可以自动回到原位
 		brick.originalCoordinate = {
 			x: brick.pos.x,
@@ -726,6 +767,11 @@ var RandomBrickGenerator = Container.subClass({
 		brick.bigger();
 	},
 	_pressUpHandler: function() {
+		// 尝试将当前积木安放在娱乐场里
+		this.kursaal.settle(this.curBrick || null);
+		// 检测当前娱乐场，并执行消除动作
+		this.kursaal.elim();
+
 		var list = this.brickList;
 
 		// 检查积木是否已经安装到娱乐场中
@@ -736,7 +782,7 @@ var RandomBrickGenerator = Container.subClass({
 
 			if (list[i].isNull()) {
 				// 将积木从自己的容器中删除
-				this.removeChild(list[i].container);
+				this.removeChild(list[i]);
 				list[i] = null;
 			}
 		}
@@ -762,14 +808,65 @@ var RandomBrickGenerator = Container.subClass({
 			}
 		});
 
-		if (hasBrick && this.kursaal.isGameOver(this)) {
+		if (!hasBrick) {
+			this.random().display();
+		}
+
+		if (this.kursaal.isGameOver(this)) {
 			// todo
 			alert('game over ~');
-		} else if (!hasBrick) {
-			this.random().display();
 		}
 	},
 	_pressMoveHandler: function() {
 		// 因为enablemoving一次性设置了这三个Handler，所以这个空处理函数必须存在以覆盖父类对应方法
+	}
+});
+
+var Counter = Container.subClass({
+	init: function() {
+		this._super();
+
+		var score = 0;
+		var that = this;
+		var text = new createjs.Text(score, config.fontSize + 'px Microsoft Yahei', '#ff7700');
+
+		Object.defineProperties(this, {
+			score: {
+				get: function() {
+					return score;
+				},
+				set: function(value) {
+					if (typeof value !== 'number') {
+						return false;
+					}
+
+					var i = score;
+
+					score = value;
+
+					(function next(){
+						text.text = i++;
+
+						if(i <= score){
+							setTimeout(next, 50);
+						}
+					})();
+				}
+			}
+		});
+
+		this.container.addChild(text);
+	},
+	add: function(score) {
+		if (typeof score !== 'number' || score < 0) {
+			return false;
+		}
+		this.score += score;
+	},
+	subtract: function(score) {
+		if (typeof score !== 'number' || score < 0) {
+			return false;
+		}
+		this.score -= score;
 	}
 });
