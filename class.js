@@ -306,7 +306,6 @@ var Container = Object.subClass({
     releaseLittleSquare(square) : 将小正方从自身container实例中删除，同时更新shapeDesc
     setOut(color)       : 堆叠成积木
     setKursaal(kursaal)     : 设置即将要放置到的娱乐场
-    isNull()          : 当前积木是否已经删除所有小正方
     bigger()          : 放大当前积木
     smaller()         : 缩小当前积木
     resetSize()         : 将积木恢复原状
@@ -315,13 +314,11 @@ var Brick = Container.subClass({
   init: function(options) {
     this._super(options);
 
-    // 引用类型的值不可以作为父类共享属性
     this.shapeDesc = JSON.parse(config.shapes[options.shapeName || 'point1']);
-
     this.name = options.shapeName || 'point1';
-
-    // 积木分数等于小正方的数量
     this.score = this.shapeDesc.length || 0;
+    this.isSettled = false;
+    this.color = options.color || '';
 
     this.setOut(options.color);
   },
@@ -333,38 +330,23 @@ var Brick = Container.subClass({
     for (var i = 0, len = this.shapeDesc.length; i < len; i++) {
       if (this.shapeDesc[i].item === square) {
         this.shapeDesc[i].item = null;
-        this.shapeDesc[i].isSet = false;
         break;
       }
     }
-  },
-  isNull: function() {
-    var ret = true;
-    this.shapeDesc.forEach(function(val) {
-      if (val.isSet) {
-        ret = false;
-        return false;
-      }
-    });
-
-    return ret;
   },
   setOut: function(color) {
     var that = this;
 
     this.shapeDesc.forEach(function(val, key, arr) {
-      if (!val.isSet) {
-        var square = new LittleSquare({
-          color: color,
-          parent: that
-        });
+      var square = new LittleSquare({
+        color: color,
+        parent: that
+      });
 
-        that.addChild(square);
+      that.addChild(square);
 
-        square.moveTo(val.x * (config.size + config.gap), val.y * (config.size + config.gap));
-        arr[key].item = square;
-        arr[key].isSet = true;
-      }
+      square.moveTo(val.x * (config.size + config.gap), val.y * (config.size + config.gap));
+      arr[key].item = square;
     });
   },
   bigger: function() {
@@ -472,8 +454,9 @@ var Kursaal = Container.subClass({
 
     this.addChild(bg);
   },
-  settle: function(brick) {
+  settle: function(brick, callback) {
     if (!(brick instanceof Brick) || !this.contain(brick)) {
+      callback && callback.apply(this);
       return false;
     }
 
@@ -515,10 +498,13 @@ var Kursaal = Container.subClass({
     });
 
     if (!available) {
+      callback && callback.apply(that);
       return false;
     } else {
       // 可行，则放置积木，并添加积木对应的分数
       this.counter.add(brick.score);
+
+      brick.isSettled = true;
 
       // 计算相对位移
       var coordinate = coordinates[0];
@@ -535,27 +521,27 @@ var Kursaal = Container.subClass({
           y: brick.pos.y + relY,
           scaleX: 1,
           scaleY: 1
-        }, 50);
+        }, 50)
+        .call(function() {
+          coordinates.forEach(function(coordinate) {
+            // 在相应的位置生成小正方
+            var newSquare = new LittleSquare({
+              parent: that,
+              color: brick.color
+            });
 
-      /*coordinates.forEach(function(coordinate) {
-        var square = brick.shapeDesc[coordinate.listIndex].item;
+            that.addChild(newSquare);
 
-        // 1.更新所属关系
-        brick.releaseLittleSquare(square);
-        that.addChild(square);
+            that.map[coordinate.x][coordinate.y].square = newSquare;
+            that.map[coordinate.x][coordinate.y].isEmpty = false;
 
-        // 2.更新map状态
-        that.map[coordinate.x][coordinate.y].square = square;
-        that.map[coordinate.x][coordinate.y].isEmpty = false;
+            newSquare.moveTo(coordinate.x * (config.size + config.gap), (config.size + config.gap) * coordinate.y);
 
-        // 3.更新小正方位置
-        createjs.Tween.get(square.shape).to({
-          x: that.pos.stageX + coordinate.x * config.size + config.gap * coordinate.x,
-          y: that.pos.stageY + coordinate.y * config.size + config.gap * coordinate.y
-        }, 1000);
-        // #todo
-        // square.moveTo(coordinate.x * config.size + config.gap * coordinate.x, coordinate.y * config.size + config.gap * coordinate.y);
-      });*/
+            brick.releaseLittleSquare(brick.shapeDesc[coordinate.listIndex].item)
+          });
+
+          callback && callback.apply(that);
+        });
     }
   },
   contain: function(brick) {
@@ -719,10 +705,10 @@ var LittleSquare = DisplayObj.subClass({
     this.width = config.size;
     this.height = config.size;
 
+    // initialize shape
     var PI = Math.PI;
     var r = config.radius;
 
-    // initialize shape
     this.shape.graphics
       .beginStroke(this.color)
       .beginFill(this.color)
@@ -879,79 +865,80 @@ var RandomBrickGenerator = Container.subClass({
     }
   },
   _pressUpHandler: function() {
+    var that = this;
     // 尝试将当前积木安放在娱乐场里
-    this.kursaal.settle(this.curBrick || null);
+    that.kursaal.settle(that.curBrick || null, function() {
+      // 检测当前娱乐场，并执行消除动作
+      that.kursaal.elim();
 
-    // 检测当前娱乐场，并执行消除动作
-    this.kursaal.elim();
+      var list = that.brickList;
 
-    var list = this.brickList;
+      // 检查积木是否已经安装到娱乐场中
+      for (var i = 0, len = list.length; i < len; i++) {
+        if (!list[i]) {
+          continue;
+        }
 
-    // 检查积木是否已经安装到娱乐场中
-    for (var i = 0, len = list.length; i < len; i++) {
-      if (!list[i]) {
-        continue;
-      }
-
-      if (list[i].isNull()) {
-        // 将积木从自己的容器中删除
-        this.removeChild(list[i]);
-        list[i] = null;
-      }
-    }
-
-    var brick = null;
-
-    // 对放置失败的积木，需要放回原来的位置
-    for (i = 0, len = list.length; i < len; i++) {
-      if (!list[i]) {
-        continue;
-      } else {
-        brick = list[i];
-      }
-
-      if (brick.originalCoordinate && (brick.originalCoordinate.x !== brick.pos.x || brick.originalCoordinate.y !== brick.pos.y)) {
-        if (brick.moving) {
-          createjs.Tween.removeAllTweens();
-          brick.tween = createjs
-            .Tween
-            .get(brick.container)
-            .to({
-              y: brick.originalCoordinate.y,
-              scaleX: config.scaleDown,
-              scaleY: config.scaleDown
-            }, 50)
-            .call((function(brick) {
-              return function() {
-                brick.moving = false;
-              };
-            })(brick));
-        } else {
-          // 积木缩小为原来的比例
-          brick.smaller({
-            x: brick.originalCoordinate.x,
-            y: brick.originalCoordinate.y
-          });
+        if (list[i].isSettled) {
+          // 将积木从自己的容器中删除
+          that.removeChild(list[i]);
+          list[i] = null;
         }
       }
-    }
 
-    var hasBrick = false;
-    list.forEach(function(item) {
-      if (item) {
-        hasBrick = true;
-        return false;
+      var brick = null;
+
+      // 对放置失败的积木，需要放回原来的位置
+      for (i = 0, len = list.length; i < len; i++) {
+        if (!list[i]) {
+          continue;
+        } else {
+          brick = list[i];
+        }
+
+        if (brick.originalCoordinate && (brick.originalCoordinate.x !== brick.pos.x || brick.originalCoordinate.y !== brick.pos.y)) {
+          if (brick.moving) {
+            createjs.Tween.removeAllTweens();
+            brick.tween = createjs
+              .Tween
+              .get(brick.container)
+              .to({
+                y: brick.originalCoordinate.y,
+                scaleX: config.scaleDown,
+                scaleY: config.scaleDown
+              }, 50)
+              .call((function(brick) {
+                return function() {
+                  brick.moving = false;
+                };
+              })(brick));
+          } else {
+            // 积木缩小为原来的比例
+            brick.smaller({
+              x: brick.originalCoordinate.x,
+              y: brick.originalCoordinate.y
+            });
+          }
+        }
+      }
+
+      var hasBrick = false;
+      list.forEach(function(item) {
+        if (item) {
+          hasBrick = true;
+          return false;
+        }
+      });
+
+      if (!hasBrick) {
+        that.random().display();
+      }
+
+      if (that.kursaal.isGameOver(that)) {
+        // todo
+        alert('game over ~');
       }
     });
-
-    if (!hasBrick) {
-      this.random().display();
-    }
-
-    if (this.kursaal.isGameOver(this)) {
-      // todo
-      alert('game over ~');
-    }
   },
   _pressMoveHandler: function() {
     // 因为enablemoving一次性设置了这三个Handler，所以这个空处理函数必须存在以覆盖父类对应方法
