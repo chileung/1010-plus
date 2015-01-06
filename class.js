@@ -635,13 +635,33 @@ var Kursaal = Container.subClass({
         y = coordinate.begin.y,
         square = null;
 
-      for (; x === coordinate.end.x && y <= coordinate.end.y || y === coordinate.end.y && x <= coordinate.end.x;) {
+      for (var index = 0; x === coordinate.end.x && y <= coordinate.end.y || y === coordinate.end.y && x <= coordinate.end.x; index++) {
         square = that.map[x][y].square;
 
-        that.removeChild(square);
+        if (square) {
+          createjs
+            .Tween
+            .get(square.shape)
+            .wait(index * 38)
+            .to({
+              scaleX: config.scaleUp,
+              scaleY: config.scaleUp
+            }, 150)
+            .to({
+              x: square.pos.x + square.width / 2,
+              y: square.pos.y + square.height / 2,
+              scaleX: 0,
+              scaleY: 0
+            }, 100)
+            .call((function(s) {
+              return function() {
+                that.removeChild(s);
+              };
+            })(square));
 
-        that.map[x][y].square = null;
-        that.map[x][y].isEmpty = true;
+          that.map[x][y].square = null;
+          that.map[x][y].isEmpty = true;
+        }
 
         if (coordinate.type === 'horizontal') {
           x++;
