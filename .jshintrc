@@ -20,5 +20,6 @@
   "devel": true,
   "jquery": true,
   "node": true,
-  "white": false
+  "white": false,
+  "predef": ["createjs"]
 }
