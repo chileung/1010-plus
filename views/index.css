@@ -4,3 +4,8 @@ body {
   -webkit-user-select: none;
   -webkit-user-drag: none;
 }
+
+* {
+  margin: 0;
+  padding: 0;
+}

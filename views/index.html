@@ -7,10 +7,26 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" type="text/css" href="lib/normalize.css">
   <link rel="stylesheet" type="text/css" href="index.css">
-  <title>Scrat Template Project</title>
+  <title>Soyi Baby Pig</title>
+  <script src="lib.js"></script>
 </head>
 <body>
-  <script src="lib/scrat.js"></script>
+  <canvas id="game"></canvas>
+  <script>
+    (function(){
+      var node = document.getElementById('game');
+      node.setAttribute('width', window.innerWidth);
+      node.setAttribute('height', window.innerHeight);
+      window.onresize = function(){
+        node.setAttribute('width', window.innerWidth);
+        node.setAttribute('height', window.innerHeight);
+      };
+    })();
+  </script>
+  <!-- // <script src="config.js"></script> -->
+  <!-- // <script src="oop.js"></script> -->
+  <!-- // <script src="class.js"></script> -->
+  <!-- // <script src="script.js"></script> -->
   <script>
     require.config(__FRAMEWORK_CONFIG__);
     require.async('boot', function (boot) { boot() });
