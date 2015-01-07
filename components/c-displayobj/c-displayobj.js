@@ -1,19 +1,27 @@
-/* 展示组件类
-  public properties:
-    obj shape : Shape实例
-    obj pos   : 坐标信息
-      pos.x, pos.y : 相对于所属容器的坐标
-    obj stage : 公共的Stage实例
+'use strict';
 
-  public methods:
-    update()  : 更新视图
-    move(x,y)   : 将组件移动{x,y}个单位
-    moveTo(x,y) : 将组件移动至{x,y}位置
+var config = require('config');
+
+/* 展示组件类(展示组件的抽象)
+  [properties]
+    shape : Shape实例
+    parent: 当前组件的父组件（一般用于计算StageX/Y）
+    stage : 公共的Stage实例
+    pos   : 坐标信息
+      x, y           : 相对于所属容器的坐标
+      stageX, stageY : 相对于Stage的坐标
+
+  [methods]
+    update()     : 更新视图
+    move(x, y)   : 将组件移动(x, y)个单位
+    moveTo(x, y) : 将组件移动至(x, y)位置
 */
-var DisplayObj = Object.subClass({
+
+module.exports = Object.subClass({
   init: function(options) {
     var that = this;
-    // 每一个显示组件都有一个shape实例
+
+    // 每一个显示组件都有一个Shape实例
     this.shape = new createjs.Shape();
 
     this.parent = options && options.parent || null;
