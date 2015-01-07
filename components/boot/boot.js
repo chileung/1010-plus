@@ -1,6 +1,15 @@
 'use strict';
 
+var Counter = require('c-counter');
+var config = require('config');
+var Kursaal = require('c-kursaal');
+var RandomBrickGenerator = require('c-randombrickgenerator');
+
 module.exports = function() {
+	createjs.Touch.enable(config.stage);
+	createjs.Ticker.setFPS(75);
+	createjs.Ticker.addEventListener('tick', config.stage);
+
 	// main
 	var counter = new Counter();
 	var playground = new Kursaal({
