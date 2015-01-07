@@ -1,34 +1,34 @@
 'use strict';
 
-/* 随机积木生成器 extend Container
-  public properties:
-    arr brickList : 现存积木列表
-    obj kursaal   : 要服务的娱乐场的引用
-    obj curBrick  : 当前选中的积木的引用
-    int width     : 生成器的宽度
+var config = require('config');
+var Container = require('c-container');
+var Kursaal = require('c-kursaal');
+var Brick = require('c-brick');
+ 
+ /* 随机积木生成器
+  [PROPERTIES]
+    brickList : 现存积木列表数组
+    kursaal   : 要服务的娱乐场的引用
+    curBrick  : 当前选中的积木的引用
+    width     : 生成器的宽度
 
-  private properties:
-    arr _randomList : 可供生成器选择的积木类型列表
-
-  public methods:
-    random()     : 生成若干个随机形状的积木,放回到自己的brickList
-    display()    : 展示现存的积木
-    start()    : 启动游戏的方法
-    setKursaal() : 设置要服务的娱乐场
-
-  private methods:
-    _pressUpHandler()   : 鼠标松开事件handler
-    _mouseDownHandler() : 鼠标点击事件handler
-    _pressMoveHandler() : 鼠标移动事件handler
+  [METHODS]
+    random()              : 生成若干个随机形状的积木,放到自己的brickList中
+    display()             : 展示现存的积木
+    start()               : 启动游戏
+    setKursaal()          : 设置要服务的娱乐场
+    _pressUpHandler()     : 鼠标松开事件handler
+    _mouseDownHandler(evt): 鼠标点击事件handler
+    _pressMoveHandler()   : 鼠标移动事件handler
 */
-var RandomBrickGenerator = Container.subClass({
+
+module.exports = Container.subClass({
   init: function(options) {
     this._super(options);
 
     this.brickList = [];
     this.kursaal = null;
     this.curBrick = null;
-
     this.width = config.stage.canvas.width - 30;
 
     // 用一个透明色的Shape垫底
@@ -220,4 +220,3 @@ var RandomBrickGenerator = Container.subClass({
     // 因为enablemoving一次性设置了这三个Handler，所以这个空处理函数必须存在以覆盖父类对应方法
   }
 });
-
