@@ -1,11 +1,11 @@
 // 基础配置
 (function(that) {
-    var myStage = new createjs.Stage('myCanvas');
+    var myStage = new createjs.Stage('game');
     that.config = {
         mapSize: 10,
         size: parseInt(myStage.canvas.width / 15),
         randomCount: 3,
-        canvasElm: 'myCanvas',
+        canvasElm: 'game',
         colorList: ['#67C2E4', '#7EDEC2', '#E17167', '#FEC54C', '#E77B91', '#B1E385', '#EEA46A', '#8091D4'],
         stage: myStage,
         gap: 2.5,
