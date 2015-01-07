@@ -1,21 +1,35 @@
-/* 抽象积木类 extend Container
-  init options:
+'use strict';
+
+var config = require('config');
+var Container = require('c-container');
+var LittleSquare = require('c-littlesquare');
+
+/* 积木类
+  [INIT]
     shapeName : 形状名称
     color     : 颜色
 
-  public properties:
-    arr shapeDesc : 形状描述数组
-      元素结构：{x : x坐标, y : y坐标, item : 小正方的引用, isSet : 当前坐标是否已绑定小正方}
+  [PROPERTIES]
+    name      : 积木形状名
+    score     : 积木所含分数
+    isSettled : 是否已经被安置
+    color     : 颜色
+    shapeDesc : 当前积木的形状描述数组
+      元素结构 : {
+        x: x坐标,
+        y: y坐标,
+        item: 小正方的引用
+      }
 
-  public methods:
-    releaseLittleSquare(square) : 将小正方从自身container实例中删除，同时更新shapeDesc
-    setOut(color)       : 堆叠成积木
-    setKursaal(kursaal)     : 设置即将要放置到的娱乐场
-    bigger()          : 放大当前积木
-    smaller()         : 缩小当前积木
-    resetSize()         : 将积木恢复原状
+  [METHODS]
+    releaseLittleSquare(square) : 将小正方从自身中删除，同时更新shapeDesc
+    setOut(color)               : 堆叠形成积木
+    setKursaal(kursaal)         : 设置即将要放置到的娱乐场
+    bigger()                    : 放大当前积木
+    smaller()                   : 缩小当前积木
 */
-var Brick = Container.subClass({
+
+module.exports = Container.subClass({
   init: function(options) {
     this._super(options);
 
@@ -84,7 +98,9 @@ var Brick = Container.subClass({
       var obj = arguments[0];
 
       for (var prop in obj) {
-        props[prop] = obj[prop];
+        if(obj.hasOwnProperty(prop)){
+          props[prop] = obj[prop];  
+        }
       }
     }
 
