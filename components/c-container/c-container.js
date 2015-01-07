@@ -1,40 +1,44 @@
-/* 容器组件类
-  init options:
-    parent     : 当前container的父container的引用(用于计算相对于stage的offset)
-    enableMoving : 设置是否允许移动
+'use strict';
 
-  public properties:
-    obj container : Container实例
-    obj tween     : 补间动画实例
-    obj parent    : 当前组件的父组件的引用
-    obj stage     : 公共的Stage实例
-    obj pos     : 坐标信息
-      pos.x, pos.y      : 相对于所属容器的坐标
-      pos.stageX, pos.stageY  : 相对于stage实例的坐标，通过parent的递归来计算
-      pos.scaleX, pos.scaleY  : 放大缩小坐标
-    obj config    : 配置信息
-      config.enableMoving : 是否允许移动
-    obj  _offset  : 触摸点距离坐标信息的距离，x & y
-    bool _moving  : 是否正在移动
+var config = require('config');
+
+/* 容器组件类(容器组件的抽象)
+  [INIT]
+    parent       : 父组件对象的引用
+    enableMoving : 是否允许移动
+
+  [PROPERTIES]
+    container : Container实例
+    tween     : Tween实例
+    parent    : 当前组件的父组件（一般用于计算StageX/Y）
+    stage     : 公共的Stage实例
+    moving    : 是否正在移动
+    pos       : 坐标信息
+      x, y           : 相对于所属容器的坐标
+      stageX, stageY : 相对于Stage的坐标，通过parent的递归来计算
+      scaleX, scaleY : x/y方向放大缩小的值
+    config    : 配置信息
+      enableMoving : 是否允许移动
+    _offset   : 触摸点距离组件坐标位置的相对位移
     
-  public methods:
-    addChild(child)   : 添加子组件到Container实例中，接受多种参数格式：单个对象、对象数组、未命名参数对象 
-    removeChild(child)  : 从Container实例中删除子组件，（add和remove暂时只支持Container、Shape类型）
-    update()      : 更新视图
-    move(x,y)       : 将组件移动{x,y}个单位
-    moveTo(x,y)     : 将组件移动至{x,y}位置
-
-  private methods:
-    _mouseDownHandler() : 鼠标按下事件handler
-    _pressMoveHandler() : 鼠标移动事件handler
-    _pressUpHandler()   : 鼠标松开事件handler
+  [METHODS]
+    addChild(child)                 : 添加组件到container中，接受多种参数格式和类型：单个对象、对象数组、未命名参数对象,目前hardcode为只接受createjs中的Container和Shape类型的实例
+    removeChild(child)              : 从container中删除组件，可接受的参数格式和类型同上
+    update()                        : 更新视图
+    move(x, y)                      : 将组件移动(x, y)个单位
+    moveTo(x, y)                    : 将组件移动至(x, y)位置
+    _mouseDownHandler(evt, _offset) : 鼠标按下事件handler
+    _pressMoveHandler(evt, _offset) : 鼠标移动事件handler
+    _pressUpHandler()               : 鼠标松开事件handler
 */
-var Container = Object.subClass({
+module.exports = Object.subClass({
   init: function(options) {
     var that = this;
+
     // 每一个容器都有一个container实例
     this.container = new createjs.Container();
 
+    // 每一个容器都有一个补间动画实例
     this.tween = null;
 
     // 可以通过options设定父container
@@ -42,9 +46,7 @@ var Container = Object.subClass({
 
     this.stage.addChild(this.container);
 
-    var stageX = 0,
-      stageY = 0,
-      enableMoving = false;
+    var enableMoving = false;
 
     this._offset = {
       x: 0,

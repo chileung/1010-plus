@@ -12,7 +12,7 @@ var config = require('config');
     stage : 公共的Stage实例
     pos   : 坐标信息
       x, y           : 相对于所属容器的坐标
-      stageX, stageY : 相对于Stage的坐标
+      stageX, stageY : 相对于Stage的坐标，通过parent的递归来计算
 
   [METHODS]
     update()     : 更新视图
