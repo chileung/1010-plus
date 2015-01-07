@@ -3,7 +3,10 @@
 var config = require('config');
 
 /* 展示组件类(展示组件的抽象)
-  [properties]
+  [INIT]
+    parent: 父组件对象的引用
+    
+  [PROPERTIES]
     shape : Shape实例
     parent: 当前组件的父组件（一般用于计算StageX/Y）
     stage : 公共的Stage实例
@@ -11,7 +14,7 @@ var config = require('config');
       x, y           : 相对于所属容器的坐标
       stageX, stageY : 相对于Stage的坐标
 
-  [methods]
+  [METHODS]
     update()     : 更新视图
     move(x, y)   : 将组件移动(x, y)个单位
     moveTo(x, y) : 将组件移动至(x, y)位置
