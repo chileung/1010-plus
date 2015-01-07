@@ -1,23 +1,35 @@
-/* 游乐场类 extend Container
-  init options:
+'use strict';
+
+var config = require('config');
+var Container = require('c-container');
+var Brick = require('c-brick');
+var LittleSquare = require('c-littlesquare');
+
+/* 游乐场类
+  [INIT]
     counter: 一个计分器实例
 
-  public properties:
-    arr map   : 一个二维的正方地图
-      元素结构：{square : 小正方的引用, isEmpty : 当前元素是否为空}
+  [PROPERTIES]
+    map       : 一个二维数组表示的正方地图
+      元素结构: {
+        square: 小正方的引用,
+        isEmpty: 当前元素是否为空
+      }
     mapWidth  : 地图宽度
-    mapHeight   : 地图高度
+    mapHeight : 地图高度
+    counter   : 计分器引用
   
-  public methods:
-    contain(brick)      : 判断给定的积木是否在游乐场范围内，返回bool
-    settle(brick)       : 将积木安装在游乐场中，失败返回false
-    elim()          : 消除符合规则的小正方
-    isGameOver()      : 根据生成器中剩余的积木来判断当前状态下是否game over
+  [METHODS]
+    contain(brick)          : 判断给定的积木是否在游乐场范围内，返回bool
+    settle(brick, callback) : 将积木安装在游乐场中，失败返回false
+    elim()                  : 消除符合规则的小正方
+    isGameOver(generator)   : 根据生成器中剩余的积木来判断当前状态下是否game over
 */
-var Kursaal = Container.subClass({
+
+module.exports = Container.subClass({
   init: function(options) {
     this._super(options);
-    this.map = (function(that) {
+    this.map = (function() {
       var ret = new Array(config.mapSize);
       for (var i = 0, len = ret.length; i < len; i++) {
         var arr = new Array(config.mapSize);
@@ -30,7 +42,7 @@ var Kursaal = Container.subClass({
         ret[i] = arr;
       }
       return ret;
-    })(this);
+    })();
 
     this.mapWidth = config.mapSize * config.size + config.gap * (config.mapSize - 1);
     this.mapHeight = config.mapSize * config.size + config.gap * (config.mapSize - 1);
@@ -57,7 +69,9 @@ var Kursaal = Container.subClass({
   },
   settle: function(brick, callback) {
     if (!(brick instanceof Brick) || !this.contain(brick)) {
-      callback && callback.apply(this);
+      if (callback) {
+        callback.apply(this);
+      }
       return false;
     }
 
@@ -99,7 +113,9 @@ var Kursaal = Container.subClass({
     });
 
     if (!available) {
-      callback && callback.apply(that);
+      if(callback){
+        callback.apply(that);
+      }
       return false;
     } else {
       // 可行，则放置积木，并添加积木对应的分数
@@ -138,10 +154,12 @@ var Kursaal = Container.subClass({
 
             newSquare.moveTo(coordinate.x * (config.size + config.gap), (config.size + config.gap) * coordinate.y);
 
-            brick.releaseLittleSquare(brick.shapeDesc[coordinate.listIndex].item)
+            brick.releaseLittleSquare(brick.shapeDesc[coordinate.listIndex].item);
           });
 
-          callback && callback.apply(that);
+          if (callback) {
+            callback.apply(that);
+          }
         });
     }
   },
