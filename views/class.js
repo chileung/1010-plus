@@ -642,7 +642,7 @@ var Kursaal = Container.subClass({
           createjs
             .Tween
             .get(square.shape)
-            .wait(index * 38)
+            .wait(index * 35)
             .to({
               scaleX: config.scaleUp,
               scaleY: config.scaleUp
