@@ -1,17 +1,22 @@
-/* 计分器 extend Container
-  public properties:
-    int score : 分数
+'use strict';
 
-  public methods:
-    add(score)    : 增加分数
+var config = require('config');
+var Container = require('c-container');
+
+/* 计分器
+  [PROPERTIES]
+    score : 当前分数
+
+  [METHODS]
+    add(score)      : 增加分数
     subtract(score) : 减少分数
 */
-var Counter = Container.subClass({
+
+module.exports = Container.subClass({
   init: function() {
     this._super();
 
     var score = 0;
-    var that = this;
     var text = new createjs.Text(score, config.fontSize + 'px Microsoft Yahei', '#ff7700');
 
     Object.defineProperties(this, {

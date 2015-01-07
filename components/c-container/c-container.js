@@ -31,6 +31,7 @@ var config = require('config');
     _pressMoveHandler(evt, _offset) : 鼠标移动事件handler
     _pressUpHandler()               : 鼠标松开事件handler
 */
+
 module.exports = Object.subClass({
   init: function(options) {
     var that = this;
