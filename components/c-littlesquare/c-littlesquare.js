@@ -1,8 +1,13 @@
-/* 小正方类 extend DisplayObj
-  init options:
-    color : 一个表示颜色值的字符串 
+'use strict';
+
+var config = require('config');
+var DisplayObj = require('c-displayobj');
+
+/* 小正方
+  [INIT]
+    color : 颜色
 */
-var LittleSquare = DisplayObj.subClass({
+module.exports = DisplayObj.subClass({
   init: function(options) {
     this._super(options);
     this.color = options && options.color || config.color;
