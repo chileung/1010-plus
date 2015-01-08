@@ -13,19 +13,7 @@
 <body>
   <canvas id="game"></canvas>
   <script>
-    (function(){
-      var node = document.getElementById('game');
-      node.setAttribute('width', window.innerWidth);
-      node.setAttribute('height', window.innerHeight);
-      window.onresize = function(){
-        node.setAttribute('width', window.innerWidth);
-        node.setAttribute('height', window.innerHeight);
-      };
-    })();
-  </script>
-  <script>
     require.config(__FRAMEWORK_CONFIG__);
-
     require.async(['config', 'oop'], function () {
       require.async('boot', function (boot) {
         boot();
