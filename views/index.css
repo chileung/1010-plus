@@ -4,7 +4,3 @@ body {
   -webkit-user-select: none;
   -webkit-user-drag: none;
 }
-
-canvas#game {
-  display: none;
-}
