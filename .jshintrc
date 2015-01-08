@@ -21,5 +21,5 @@
   "jquery": true,
   "node": true,
   "white": false,
-  "predef": ["createjs"]
+  "predef": ["createjs", "__inline"]
 }
