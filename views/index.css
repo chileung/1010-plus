@@ -4,3 +4,11 @@ body {
   -webkit-user-select: none;
   -webkit-user-drag: none;
 }
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
+}

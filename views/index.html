@@ -11,7 +11,20 @@
   <script src="lib.js"></script>
 </head>
 <body>
+  <canvas id="game" class="hide" width="0" height="0"></canvas>
   <script>
+    window.stage = new createjs.Stage('game');
+
+    (function() {
+      var node = document.getElementById('game');
+      node.setAttribute('width', window.innerWidth);
+      node.setAttribute('height', window.innerHeight);
+      window.onresize = function() {
+        node.setAttribute('width', window.innerWidth);
+        node.setAttribute('height', window.innerHeight);
+      };
+    })();
+
     require.config(__FRAMEWORK_CONFIG__);
     require.async(['boot', 'oop'], function (boot) {
       boot();
