@@ -1,5 +1,7 @@
 {
   "name": "1010-plus",
   "version": "1.0.0",
-  "dependencies": {}
+  "dependencies": {
+  	"zack-lin/page": "0.1.5"
+  }
 }
