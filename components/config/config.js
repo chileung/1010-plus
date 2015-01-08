@@ -1,13 +1,11 @@
-var stage = new createjs.Stage('game');
-
 // 基础配置
 module.exports = {
     mapSize: 10,
-    size: parseInt(stage.canvas.width / 15),
+    size: parseInt(window.stage.canvas.width / 15),
     randomCount: 3,
     canvasElm: 'game',
     colorList: ['#67C2E4', '#7EDEC2', '#E17167', '#FEC54C', '#E77B91', '#B1E385', '#EEA46A', '#8091D4'],
-    stage: stage,
+    stage: window.stage,
     gap: 2.5,
     bgColor: '#EBEBEB',
     radius: 4,
