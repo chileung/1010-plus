@@ -5,12 +5,14 @@ var page = new Page({
 	tpl: __inline('p-game.html')
 });
 
-page.show = function(state) {
-	var Counter = require('c-counter');
-	var config = require('config');
-	var Kursaal = require('c-kursaal');
-	var RandomBrickGenerator = require('c-randombrickgenerator');
+var Counter = require('c-counter');
+var config = require('config');
+var Kursaal = require('c-kursaal');
+var RandomBrickGenerator = require('c-randombrickgenerator');
 
+var generator = null;
+
+page.show = function(state) {
 	createjs.Touch.enable(config.stage);
 	createjs.Ticker.setFPS(75);
 	createjs.Ticker.addEventListener('tick', config.stage);
@@ -20,7 +22,8 @@ page.show = function(state) {
 	var playground = new Kursaal({
 		counter: counter
 	});
-	var generator = new RandomBrickGenerator({
+	
+	generator = new RandomBrickGenerator({
 		enableMoving: true
 	});
 
@@ -39,7 +42,10 @@ page.show = function(state) {
 };
 
 page.hide = function() {
-
+	// 销毁生成器，当停止游戏时需要调用
+	generator.destroy();
+	
+	window.stage.canvas.className = 'hide';
 };
 
 module.exports = page;

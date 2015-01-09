@@ -100,6 +100,9 @@ module.exports = Container.subClass({
   start: function() {
     this.random().display();
   },
+  destroy: function() {
+    this.stage.removeAllChildren();
+  },
   _randomList: (function() {
     var ret = [];
     for (var shapeName in config.shapes) {
