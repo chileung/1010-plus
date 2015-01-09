@@ -14,8 +14,13 @@ var generator = null;
 
 page.show = function(state) {
 	createjs.Touch.enable(config.stage);
-	createjs.Ticker.setFPS(75);
-	createjs.Ticker.addEventListener('tick', config.stage);
+
+	// relate to FPS
+	createjs.Ticker.framerate = 1000;
+
+	createjs.Ticker.addEventListener('tick', function(){
+		config.stage.update();
+	});
 
 	// main
 	var counter = new Counter();
@@ -42,9 +47,12 @@ page.show = function(state) {
 };
 
 page.hide = function() {
+	createjs.Touch.enable(config.stage);
+	createjs.Ticker.removeAllEventListeners('tick');
+
 	// 销毁生成器，当停止游戏时需要调用
 	generator.destroy();
-	
+
 	window.stage.canvas.className = 'hide';
 };
 

@@ -102,6 +102,7 @@ module.exports = Container.subClass({
   },
   destroy: function() {
     this.stage.removeAllChildren();
+    this.stage.update();
   },
   _randomList: (function() {
     var ret = [];
