@@ -12,6 +12,10 @@ var RandomBrickGenerator = require('c-randombrickgenerator');
 
 var generator = null;
 
+page.load = function() {
+	require('canvasImg/c-setting').initialize();
+};
+
 page.show = function(state) {
 	createjs.Touch.enable(config.stage);
 
