@@ -1,6 +1,35 @@
 #p-game
-  .c-setting.btn
+  .i-setting.btn
     position absolute
     bottom 0
     right 0
     margin 10px
+    z-index 2
+  .setting-area
+    background-color #67C2E4
+    position absolute
+    height 50%
+    width 100%
+    top 100%
+    z-index 2
+    transition top .15s
+    transition-timing-function ease-out
+    -webkit-transition top .15s
+    -webkit-transition-timing-function ease-out
+    .setting-container
+      padding 5% 10%
+      text-align center
+      font-size 0
+      >div
+        display inline-block
+        padding 0 5px
+      .btn
+        display block
+        margin-bottom 5px
+    .back.btn
+      position absolute
+      right 0
+      bottom 0
+      margin 0 15px 15px 0
+  .setting-area.scrollUp
+    top 50%

@@ -5,13 +5,18 @@ var page = new Page({
   tpl: __inline('p-main.html')
 });
 
+var settingArea = null;
+
 page.load = function() {
-  require('canvasImg/c-crown').initialize();
-  require('canvasImg/c-setting').initialize();
+  require('canvasImg/i-trophy').initialize();
+  require('canvasImg/i-setting').initialize();
+  require('canvasImg/i-start').initialize();
+  require('canvasImg/i-back').initialize();
+  require('canvasImg/i-fork').initialize();
 
-  var settingArea = document.querySelector('#p-main .setting-area');
+  settingArea = document.querySelector('#p-main .setting-area');
 
-  document.querySelector('#p-main .c-setting.btn').addEventListener('click', function() {
+  document.querySelector('#p-main .i-setting.btn').addEventListener('click', function() {
     settingArea.classList.add('scrollUp');
   });
 
@@ -22,9 +27,12 @@ page.load = function() {
 
 page.show = function() {
   // localStorage.getItem('')
+  // html中的Logo图片还没弄
   // todo
 };
 
-page.hide = function() {};
+page.hide = function() {
+  settingArea.classList.remove('scrollUp');
+};
 
 module.exports = page;

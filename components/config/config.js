@@ -4,6 +4,7 @@ module.exports = {
     size: parseInt(window.stage.canvas.width / 15),
     randomCount: 3,
     canvasElm: 'game',
+    // 蓝、浅绿、橙、黄、桃红、草绿、土黄、紫
     colorList: ['#67C2E4', '#7EDEC2', '#E17167', '#FEC54C', '#E77B91', '#B1E385', '#EEA46A', '#8091D4'],
     stage: window.stage,
     gap: 2.5,
