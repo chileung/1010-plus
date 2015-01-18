@@ -23,7 +23,7 @@ then visit **localhost:5000** for fun !
 2. [CreateJS](https://github.com/CreateJS "CreateJS") (only use EaselJS & TweenJS)
 
 ## Why would I develop 1010!-plus ?
-One day my girlfriend, Soyi, found a very interesting game named [**1010!**](), which has advertisements on the top of the screen.
+One day my girlfriend, Soyi, found a very interesting game named [**1010!**](http://www.wandoujia.com/apps/com.gramgames.tenten), which has advertisements on the top of the screen.
 
 She encouraged me to develop a similar version without advertisement. Well, I don't think that anyone can reject begs from a beautiful & sexy girl.
 
@@ -36,7 +36,7 @@ I will overwrite it via cocos2d-js for study in the future.
 ## What I hope ?
 **Just for fun !**
 
-If you feel interested, please star me so that i can own my first star. :)
+If you feel interested, please star me so that I can own my first star. :)
 
 Also welcome to fix bugs that I haven't found according to pull request.
 
