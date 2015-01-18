@@ -9,7 +9,7 @@ bash 1:
 
     scrat release -wcL
 
-bash 2
+bash 2:
 
     scrat server start
 
