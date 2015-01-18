@@ -19,6 +19,7 @@ page.load = function() {
 	require('canvasImg/i-setting').initialize();
 	require('canvasImg/i-fork').initialize();
 	require('canvasImg/i-back').initialize();
+	require('canvasImg/i-logo').initialize();
 	require('canvasImg/i-home').initialize();
 
 	settingArea = document.querySelector('#p-game .setting-area');

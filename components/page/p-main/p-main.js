@@ -13,6 +13,7 @@ page.load = function() {
   require('canvasImg/i-start').initialize();
   require('canvasImg/i-back').initialize();
   require('canvasImg/i-fork').initialize();
+  require('canvasImg/i-logo').initialize();
 
   settingArea = document.querySelector('#p-main .setting-area');
 
@@ -26,9 +27,8 @@ page.load = function() {
 };
 
 page.show = function() {
-  // localStorage.getItem('')
-  // html中的Logo图片还没弄
-  // todo
+  var node = document.querySelector('#p-main .highest-score');
+  node.innerHTML = localStorage.getItem('1010-p-hc') || 0;
 };
 
 page.hide = function() {
