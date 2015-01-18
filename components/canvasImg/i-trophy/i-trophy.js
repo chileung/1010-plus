@@ -12,15 +12,15 @@ var Trophy = CanvasImg.subClass({
 
     var g = new createjs.Graphics();
 
-    g.s(color).ss(1, 'round', 'round')
-      .mt(9, 0)
-      .lt(0, 0)
+    g.s(color).ss(3, 'round', 'round')
+      .mt(9, 3)
+      .lt(3, 3)
       .qt(5, 30, 15, 30)
-      .mt(41, 0)
-      .lt(50, 0)
+      .mt(41, 3)
+      .lt(47, 3)
       .qt(45, 30, 35, 30)
-      .mt(12, 0)
-      .lt(38, 0)
+      .mt(12, 3)
+      .lt(38, 3)
       .f(color)
       .mt(12, 0)
       .qt(15, 35, 25, 35)
@@ -29,7 +29,7 @@ var Trophy = CanvasImg.subClass({
       .qt(35, 35, 25, 35)
       .lt(25, 0)
       .f('#fff')
-      .dp(25, 15, 6, 5, 0.4, -90)
+      .dp(25, 15, 10, 5, 0.4, -90)
       .f(color)
       .a(25, 50, 10, Math.PI, 0, false)
       .draw(ctx);
