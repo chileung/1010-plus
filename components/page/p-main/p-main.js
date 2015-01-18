@@ -28,7 +28,8 @@ page.load = function() {
 
 page.show = function() {
   var node = document.querySelector('#p-main .highest-score');
-  node.innerHTML = localStorage.getItem('1010-p-hc') || 0;
+  var hc = localStorage.getItem('1010-p-hc');
+  node.innerHTML = (isNaN(hc) || !!!hc) ? 0 : hc;
 };
 
 page.hide = function() {

@@ -53,7 +53,9 @@ module.exports = Container.subClass({
 
     this.score += score;
 
-    var hc = parseInt(localStorage.getItem('1010-p-hc'));
+    var hc = localStorage.getItem('1010-p-hc');
+
+    var hc = (isNaN(hc) || !!!hc) ? 0 : parseInt(hc);
 
     localStorage.setItem('1010-p-hc', hc < this.score ? this.score : hc);
   },
