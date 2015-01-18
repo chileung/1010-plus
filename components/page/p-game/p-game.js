@@ -59,7 +59,7 @@ page.show = function(state) {
 	// 摆放位置
 	generator.moveTo(30, playground.mapHeight + 100 + config.size * 1.5);
 	playground.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, 100);
-	counter.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, 50);
+	counter.moveTo((config.stage.canvas.width - playground.mapWidth) / 2, 65);
 
 	// 启动游戏
 	generator.start();
@@ -68,7 +68,7 @@ page.show = function(state) {
 };
 
 page.hide = function() {
-	createjs.Touch.enable(config.stage);
+	createjs.Touch.disable(config.stage);
 	createjs.Ticker.removeAllEventListeners('tick');
 
 	// 销毁生成器，当停止游戏时需要调用
