@@ -1,4 +1,5 @@
 # 1010!-plus
+1010!-plus is an HTML5 version of an interesting game named [**1010!**](http://www.wandoujia.com/apps/com.gramgames.tenten).
 ## Usage    
 
 bash 1:
