@@ -31,10 +31,8 @@ page.load = function() {
   document.querySelector('#p-game .setting-area .back.btn').addEventListener('click', function() {
     settingArea.classList.remove('scrollUp');
   });
-};
 
-page.show = function(state) {
-	createjs.Touch.enable(config.stage);
+  createjs.Touch.enable(config.stage);
 
 	// relate to FPS
 	createjs.Ticker.framerate = 1000;
@@ -42,7 +40,9 @@ page.show = function(state) {
 	createjs.Ticker.addEventListener('tick', function(){
 		config.stage.update();
 	});
+};
 
+page.show = function(state) {
 	// main
 	var counter = new Counter();
 	var playground = new Kursaal({
@@ -68,9 +68,6 @@ page.show = function(state) {
 };
 
 page.hide = function() {
-	createjs.Touch.disable(config.stage);
-	createjs.Ticker.removeAllEventListeners('tick');
-
 	// 销毁生成器，当停止游戏时需要调用
 	generator.destroy();
 
