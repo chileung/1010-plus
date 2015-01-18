@@ -50,7 +50,12 @@ module.exports = Container.subClass({
     if (typeof score !== 'number' || score < 0) {
       return false;
     }
+
     this.score += score;
+
+    var hc = parseInt(localStorage.getItem('1010-p-hc'));
+
+    localStorage.setItem('1010-p-hc', hc < this.score ? this.score : hc);
   },
   subtract: function(score) {
     if (typeof score !== 'number' || score < 0) {
