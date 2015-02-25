@@ -66,17 +66,13 @@ module.exports = Object.subClass({
 
           if (enableMoving) {
             // 绑定事件
-            that.container.off('mousedown', that._mouseDownHandler);
-            that.container.on('mousedown', that._mouseDownHandler, that, false, that._offset);
-            that.container.off('pressmove', that._pressMoveHandler);
-            that.container.on('pressmove', that._pressMoveHandler, that, false, that._offset);
-            that.container.off('pressup', that._pressUpHandler);
-            that.container.on('pressup', that._pressUpHandler, that, false, that._offset);
+            that.container.removeAllEventListeners();
+            that.container.on('mousedown', that._mouseDownHandler, that);
+            that.container.on('pressmove', that._pressMoveHandler, that);
+            that.container.on('pressup', that._pressUpHandler, that);
           } else {
             // 解绑事件
-            that.container.off('mousedown', that._mouseDownHandler);
-            that.container.off('pressmove', that._pressMoveHandler);
-            that.container.off('pressup', that._pressUpHandler);
+            that.container.removeAllEventListeners();
           }
         }
       }
@@ -208,12 +204,12 @@ module.exports = Object.subClass({
     this.pos.x = x;
     this.pos.y = y;
   },
-  _pressMoveHandler: function(evt, _offset) {
-    this.moveTo(evt.stageX + _offset.x, evt.stageY + _offset.y);
+  _pressMoveHandler: function(evt) {
+    this.moveTo(evt.stageX + this._offset.x, evt.stageY + this._offset.y);
   },
-  _mouseDownHandler: function(evt, _offset) {
-    _offset.x = this.pos.x - evt.stageX;
-    _offset.y = this.pos.y - evt.stageY;
+  _mouseDownHandler: function(evt) {
+    this._offset.x = this.pos.x - evt.stageX;
+    this._offset.y = this.pos.y - evt.stageY;
   },
   _pressUpHandler: function() {},
   stage: config.stage
