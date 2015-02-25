@@ -4,8 +4,8 @@ var config = require('config');
 var Container = require('c-container');
 var Kursaal = require('c-kursaal');
 var Brick = require('c-brick');
- 
- /* 随机积木生成器
+
+/* 随机积木生成器
   [PROPERTIES]
     brickList : 现存积木列表数组
     kursaal   : 要服务的娱乐场的引用
@@ -31,7 +31,7 @@ module.exports = Container.subClass({
     this.curBrick = null;
     this.width = config.stage.canvas.width - 30;
 
-    // 用一个透明色的Shape垫底
+    // 用一个白色的Shape垫底
     var bg = new createjs.Shape();
 
     this.addChild(bg);
@@ -40,11 +40,19 @@ module.exports = Container.subClass({
       .beginFill('#fff')
       .drawRect(0, 0, this.width, 5 * config.size + config.gap * 4);
 
-    bg.alpha = 0.01;
-
     bg.on('pressmove', function(evt) {
+      if (this._md && this._md.length > 1) {
+        return;
+      }
+
       if (this.curBrick) {
-        this.curBrick._pressMoveHandler.call(this.curBrick, evt, this.curBrick._offset);
+        var pmEvt = new createjs.Event('pressmove');
+        pmEvt.set({
+          stageX: evt.stageX,
+          stageY: evt.stageY
+        });
+
+        this.curBrick.container.dispatchEvent(pmEvt);
       }
     }, this);
   },
@@ -112,13 +120,23 @@ module.exports = Container.subClass({
     return ret;
   })(),
   _mouseDownHandler: function(evt) {
+    if (!this._md) {
+      this._md = [{}];
+    } else {
+      this._md.push({});
+    }
+
+    if (this._md.length > 1) {
+      return;
+    }
+
     // 确定当前点击的是哪个积木
     // 因为在当前这个container内，积木是分布在不同位置的，只有点击积木的时候，当前container的mouseDown事件才会触发
     // 因此，点击其他空白区域是不会触发当前事件的。基于这个背景，通过坐标判断就可行。
     var localX = evt.localX;
 
     for (var i = 1; i < config.randomCount; i++) {
-      if (localX < this.width * i / 3 && localX > this.width * (i - 1) / 3) {
+      if (localX <= parseInt(this.width * i / 3) && localX >= parseInt(this.width * (i - 1) / 3)) {
         break;
       }
     }
@@ -130,7 +148,22 @@ module.exports = Container.subClass({
     this.curBrick = brick || null;
 
     if (this.curBrick) {
-      this.curBrick._mouseDownHandler.call(this.curBrick, evt, this.curBrick._offset);
+      // 禁止其他积木的移动
+      var that = this;
+      this.brickList.forEach(function(brick) {
+        if (brick && (brick !== that.curBrick)) {
+          brick.config.enableMoving = false;
+        }
+      });
+
+      var mdEvt = new createjs.Event('mousedown');
+      mdEvt.set({
+        stageX: evt.stageX,
+        stageY: evt.stageY
+      });
+
+      // 为了让当前积木记录移动前的偏移值
+      this.curBrick.container.dispatchEvent(mdEvt);
 
       if (!this.curBrick.moving) {
         // 记录积木被移动前的位置，以便摆放失败后可以自动回到原位
@@ -139,13 +172,27 @@ module.exports = Container.subClass({
           y: brick.pos.y
         };
 
-        // 鼠标按住后，积木放大
+        // 鼠标按住后，积木放大 
         this.curBrick.bigger();
       }
     }
   },
-  _pressUpHandler: function() {
+  _pressUpHandler: function(evt) {
+    if (!this._md.length) {
+      return;
+    } else {
+      this._md.pop();
+    }
+
     var that = this;
+
+    // 恢复其他积木的移动
+    this.brickList.forEach(function(brick) {
+      if (brick) {
+        brick.config.enableMoving = true;
+      }
+    });
+
     // 尝试将当前积木安放在娱乐场里
     that.kursaal.settle(that.curBrick || null, function() {
       // 检测当前娱乐场，并执行消除动作
