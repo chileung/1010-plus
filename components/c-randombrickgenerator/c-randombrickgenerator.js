@@ -168,12 +168,17 @@ module.exports = Container.subClass({
       if (!this.curBrick.moving) {
         // 记录积木被移动前的位置，以便摆放失败后可以自动回到原位
         this.curBrick.originalCoordinate = {
-          x: brick.pos.x,
-          y: brick.pos.y
+          x: this.curBrick.pos.x,
+          y: this.curBrick.pos.y
         };
+        
+        var brickSize = (config.size * 5 + config.gap * 4) * config.scaleUp;
 
         // 鼠标按住后，积木放大 
-        this.curBrick.bigger();
+        this.curBrick.bigger({
+          x: evt.localX - brickSize / 2,
+          y: evt.localY - brickSize - config.moveUp
+        });
       }
     }
   },
@@ -226,26 +231,14 @@ module.exports = Container.subClass({
         if (brick.originalCoordinate && (brick.originalCoordinate.x !== brick.pos.x || brick.originalCoordinate.y !== brick.pos.y)) {
           if (brick.moving) {
             createjs.Tween.removeAllTweens();
-            brick.tween = createjs
-              .Tween
-              .get(brick.container)
-              .to({
-                y: brick.originalCoordinate.y,
-                scaleX: config.scaleDown,
-                scaleY: config.scaleDown
-              }, 50)
-              .call((function(brick) {
-                return function() {
-                  brick.moving = false;
-                };
-              })(brick));
-          } else {
-            // 积木缩小为原来的比例
-            brick.smaller({
-              x: brick.originalCoordinate.x,
-              y: brick.originalCoordinate.y
-            });
+            brick.moving = false;
           }
+
+          // 积木缩小为原来的比例
+          brick.smaller({
+            x: brick.originalCoordinate.x,
+            y: brick.originalCoordinate.y
+          });
         }
       }
 
