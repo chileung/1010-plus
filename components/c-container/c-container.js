@@ -5,7 +5,7 @@ var config = require('config');
 /* 容器组件类(容器组件的抽象)
   [INIT]
     parent       : 父组件对象的引用
-    enableMoving : 是否允许移动
+    enableMoving : 是否允许移动,默认为false
 
   [PROPERTIES]
     container : Container实例
@@ -27,8 +27,8 @@ var config = require('config');
     update()                        : 更新视图
     move(x, y)                      : 将组件移动(x, y)个单位
     moveTo(x, y)                    : 将组件移动至(x, y)位置
-    _mouseDownHandler(evt, _offset) : 鼠标按下事件handler
-    _pressMoveHandler(evt, _offset) : 鼠标移动事件handler
+    _mouseDownHandler(evt)          : 鼠标按下事件handler
+    _pressMoveHandler(evt)          : 鼠标移动事件handler
     _pressUpHandler()               : 鼠标松开事件handler
 */
 
