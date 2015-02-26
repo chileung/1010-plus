@@ -12,7 +12,7 @@ module.exports = {
     radius: 4,
     scaleDown: 0.7,
     scaleUp: 1.1,
-    moveUp: 70,
+    moveUp: 60,
     fontSize: 20,
     shapes: {
         point1: '[{"x": 2, "y": 4}]',
