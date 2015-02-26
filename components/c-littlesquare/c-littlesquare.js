@@ -6,6 +6,10 @@ var DisplayObj = require('c-displayobj');
 /* 小正方
   [INIT]
     color : 颜色
+
+  [PROPERTIES]
+    width  : 积木宽度
+    height : 积木高度
 */
 module.exports = DisplayObj.subClass({
   init: function(options) {
