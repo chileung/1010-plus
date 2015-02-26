@@ -14,6 +14,7 @@ var LittleSquare = require('c-littlesquare');
     score     : 积木所含分数
     isSettled : 是否已经被安置
     color     : 颜色
+    moving    : 是否处于移动状态
     shapeDesc : 当前积木的形状描述数组
       元素结构 : {
         x: x坐标,
@@ -68,45 +69,39 @@ module.exports = Container.subClass({
       arr[key].item = square;
     });
   },
-  bigger: function() {
+  bigger: function(props) {
+    var that = this;
     this.moving = true;
 
-    var that = this;
+    props = props || {};
+
+    props['scaleX'] = props['scaleX'] || config.scaleUp;
+    props['scaleY'] = props['scaleY'] || config.scaleUp;
+
+    // 记录变大的距离
+    var offsetX = this.pos.x - props.x;
+    var offsetY = this.pos.y - props.y;
 
     this.tween = createjs
       .Tween
       .get(this.container)
-      .to({
-        y: this.pos.y - config.moveUp,
-        scaleX: config.scaleUp,
-        scaleY: config.scaleUp
-      }, 50)
+      .to(props, 50)
       .call(function() {
         that.moving = false;
-        // 更新偏移值(就因为这个东东，_offset需要从Private改为Public)
-        that._offset.y -= config.moveUp;
+
+        // 更新偏移值
+        that._offset.x = that._offset.x + offsetX;
+        that._offset.y = that._offset.y + offsetY;
       });
   },
-  smaller: function() {
-    var props = {
-      y: this.pos.y + config.moveUp,
-      scaleX: config.scaleDown,
-      scaleY: config.scaleDown
-    };
-
-    if (arguments.length === 1) {
-      var obj = arguments[0];
-
-      for (var prop in obj) {
-        if(obj.hasOwnProperty(prop)){
-          props[prop] = obj[prop];  
-        }
-      }
-    }
-
+  smaller: function(props) {
+    var that = this;
     this.moving = true;
 
-    var that = this;
+    props = props || {};
+
+    props['scaleX'] = props['scaleX'] || config.scaleDown;
+    props['scaleY'] = props['scaleY'] || config.scaleDown;
 
     this.tween = createjs
       .Tween
