@@ -29,7 +29,7 @@ module.exports = Container.subClass({
     this.brickList = [];
     this.kursaal = null;
     this.curBrick = null;
-    this.width = config.stage.canvas.width - 30;
+    this.width = config.stage.canvas.width;
 
     // 用一个白色的Shape垫底
     var bg = new createjs.Shape();
@@ -92,7 +92,7 @@ module.exports = Container.subClass({
       return false;
     }
 
-    var brickWidth = config.size * 5 + config.gap * 4;
+    var brickWidth = (config.size * 5 + config.gap * 4) * config.scaleDown;
 
     // 设置积木的属性
     for (var i = 0, len = this.brickList.length; i < len; i++) {
@@ -102,7 +102,7 @@ module.exports = Container.subClass({
       // 缩放
       brick.pos.scaleX = brick.pos.scaleY = config.scaleDown;
       // 布局
-      brick.moveTo(this.width / 3 * i - (brickWidth / 2 - this.width / 6), 0);
+      brick.moveTo(this.width / 3 * i + this.width / 6 - brickWidth / 2, 0);
     }
   },
   start: function() {
