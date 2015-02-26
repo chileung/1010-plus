@@ -205,11 +205,11 @@ module.exports = Object.subClass({
     this.pos.y = y;
   },
   _pressMoveHandler: function(evt) {
-    this.moveTo(evt.stageX + this._offset.x, evt.stageY + this._offset.y);
+    this.moveTo(evt.stageX - this.parent.pos.stageX - this._offset.x, evt.stageY - this.parent.pos.stageY - this._offset.y);
   },
   _mouseDownHandler: function(evt) {
-    this._offset.x = this.pos.x - evt.stageX;
-    this._offset.y = this.pos.y - evt.stageY;
+    this._offset.x = evt.stageX - this.pos.stageX;
+    this._offset.y = evt.stageY - this.pos.stageY;
   },
   _pressUpHandler: function() {},
   stage: config.stage
